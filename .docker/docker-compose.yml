@@ -1,0 +1,13 @@
+version: "3"
+services:
+  csa-db:
+    image: postgres:14.0
+    container_name: csa-db
+    restart: always
+    environment:
+      POSTGRES_DB: csa-db
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - ./postgresql:/var/lib/postgresql/data
