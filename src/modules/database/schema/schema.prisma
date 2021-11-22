@@ -43,23 +43,23 @@ enum ActionStatus {
 }
 
 model User {
-  id                  String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  organization        Organization      @relation(fields: [organization_id], references: [id])
-  organization_id     String            @db.Uuid
-  email               String            @unique
-  password_hash       String
-  login               String            @unique
-  role                Role
-  first_name          String
-  last_name           String
-  middle_name         String
-  birthdate           DateTime
-  birthplace          String
-  residence           String
-  work_position       String
-  requested_documents IssuedDoctument[] @relation("Requested")
-  issued_documents    IssuedDoctument[] @relation("Issued")
-  ActionLog           ActionLog[]
+  id                 String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  organization       Organization      @relation(fields: [organizationId], references: [id])
+  organizationId     String            @db.Uuid
+  email              String            @unique
+  passwordHash       String
+  login              String            @unique
+  role               Role
+  firstName          String
+  lastName           String
+  middleName         String
+  birthdate          DateTime
+  birthplace         String
+  residence          String
+  workPosition       String
+  requestedDocuments IssuedDoctument[] @relation("Requested")
+  issuedDocuments    IssuedDoctument[] @relation("Issued")
+  ActionLog          ActionLog[]
 }
 
 model Organization {
@@ -72,70 +72,70 @@ model Organization {
 }
 
 model PassportData {
-  id                             String           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  issuing_authority              IssuingAuthority @relation(fields: [issuing_authority_id], references: [identification_code])
-  issuing_authority_id           Int
-  series                         Int
-  passport_number                BigInt
-  registration_date              DateTime
-  issue_date                     DateTime
-  expiration_date                DateTime
-  taxpayer_identification_number BigInt
-  civil_status_acts              CivilStatusAct[]
+  id                           String           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  issuingAuthority             IssuingAuthority @relation(fields: [issuingAuthorityId], references: [identificationCode])
+  issuingAuthorityId           Int
+  series                       Int
+  passportNumber               BigInt
+  registrationDate             DateTime
+  issueDate                    DateTime
+  expirationDate               DateTime
+  taxpayerIdentificationNumber BigInt
+  civilStatusActs              CivilStatusAct[]
 }
 
 model IssuingAuthority {
-  identification_code Int            @id @unique
-  division_name       String
-  administration_name String
-  address             String
-  issued_passports    PassportData[]
+  identificationCode Int            @id @unique
+  divisionName       String
+  administrationName String
+  address            String
+  issuedPassports    PassportData[]
 }
 
 model CivilStatusAct {
-  id               String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  act_type         ActType           @relation(fields: [act_type_id], references: [id])
-  act_type_id      String            @db.Uuid
-  passport_data    PassportData      @relation(fields: [passport_data_id], references: [id])
-  passport_data_id String            @db.Uuid
-  is_active        Boolean
-  current_status   Json
-  IssuedDoctument  IssuedDoctument[]
-  ActionLog        ActionLog[]
+  id              String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  actType         ActType           @relation(fields: [actTypeId], references: [id])
+  actTypeId       String            @db.Uuid
+  passportData    PassportData      @relation(fields: [passportDataId], references: [id])
+  passportDataId  String            @db.Uuid
+  isActive        Boolean
+  currentStatus   Json
+  IssuedDoctument IssuedDoctument[]
+  ActionLog       ActionLog[]
 }
 
 model ActType {
-  id        String           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  type_name String
-  acts      CivilStatusAct[]
+  id       String           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  typeName String
+  acts     CivilStatusAct[]
 }
 
 model IssuedDoctument {
-  id                      String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  requester               User            @relation(fields: [requester_id], references: [id], name: "Requested")
-  requester_id            String          @db.Uuid
-  register                User            @relation(fields: [register_id], references: [id], name: "Issued")
-  register_id             String          @db.Uuid
-  civil_act               CivilStatusAct  @relation(fields: [civil_act_id], references: [id])
-  civil_act_id            String          @db.Uuid
-  issuing_organization    Organization    @relation(fields: [issuing_organization_id], references: [id])
-  issuing_organization_id String          @db.Uuid
-  type                    IssuedDocType
-  status                  IssuedDocStatus
-  request_date            DateTime
-  processed_date          DateTime
-  serial_code             Int
+  id                    String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  requester             User            @relation(fields: [requesterId], references: [id], name: "Requested")
+  requesterId           String          @db.Uuid
+  register              User            @relation(fields: [registerId], references: [id], name: "Issued")
+  registerId            String          @db.Uuid
+  civilAct              CivilStatusAct  @relation(fields: [civilActId], references: [id])
+  civilActId            String          @db.Uuid
+  issuingOrganization   Organization    @relation(fields: [issuingOrganizationId], references: [id])
+  issuingOrganizationId String          @db.Uuid
+  type                  IssuedDocType
+  status                IssuedDocStatus
+  requestDate           DateTime
+  processedDate         DateTime
+  serialCode            Int
 }
 
 model ActionLog {
-  id                  String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  user                User            @relation(fields: [user_id], references: [id])
-  user_id             String          @db.Uuid
-  civil_status_act    CivilStatusAct? @relation(fields: [civil_status_act_id], references: [id])
-  civil_status_act_id String?         @db.Uuid
-  type                LogAction
-  date                DateTime
-  action_status       ActionStatus
-  new_snapshot        Json?
-  old_snapshoy        Json?
+  id               String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  user             User            @relation(fields: [userId], references: [id])
+  userId           String          @db.Uuid
+  civilStatusAct   CivilStatusAct? @relation(fields: [civilStatusActId], references: [id])
+  civilStatusActId String?         @db.Uuid
+  type             LogAction
+  date             DateTime
+  actionStatus     ActionStatus
+  newSnapshot      Json?
+  oldSnapshoy      Json?
 }
