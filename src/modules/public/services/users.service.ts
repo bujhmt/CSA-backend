@@ -6,7 +6,7 @@ import {PrismaService} from '../../database/services/prisma.service';
 export class UsersService {
     constructor(private readonly prismaService: PrismaService) {}
 
-    create(user: User) {
+    create(user: Omit<User, 'id'>) {
         const newUser = this.prismaService.user.create({data: {...user}});
         return newUser;
     }

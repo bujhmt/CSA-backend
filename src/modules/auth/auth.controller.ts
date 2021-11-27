@@ -1,24 +1,27 @@
 import {
-    Controller, Post, UseGuards, Request, Body,
+    Controller, Post, UseGuards, Request, Body, UseFilters,
 } from '@nestjs/common';
-import {CreateUserDTO} from './dto/createUser.dto';
-import {LocalAuthGuard} from './guards/localAuth.guard';
-import {DoesUserExist} from './guards/userExist.guard';
+import {RequestValidationFilter} from 'src/filters/request-validation.filter';
+import {CreateUserDTO} from './dto/create-user.dto';
+import {LocalAuthGuard} from './guards/local-auth.guard';
+import {DoesUserExist} from './guards/user-exist.guard';
+import {CreateUserToken} from './interfaces/create-user-token.interface';
 import {AuthService} from './services/auth.service';
 
 @Controller('auth')
 export class AuthController {
-    constructor(private authService: AuthService) {}
+    constructor(private readonly authService: AuthService) {}
 
     @UseGuards(LocalAuthGuard)
     @Post('login')
-    async login(@Request() req) {
+    login(@Request() req): Promise<string> {
         return this.authService.login(req.user);
     }
 
+    @UseFilters(RequestValidationFilter)
     @UseGuards(DoesUserExist)
     @Post('signup')
-    async signUp(@Body() user: CreateUserDTO) {
+    signUp(@Body() user: CreateUserDTO): Promise<CreateUserToken> {
         return this.authService.create(user);
     }
 }
