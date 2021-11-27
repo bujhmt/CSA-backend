@@ -32,11 +32,14 @@ module.exports = {
         'object-curly-spacing': ['error', 'never'], // банит за { some } from 'some-location', правильно только {some} from 'some-location'
         'no-plusplus': [2, {allowForLoopAfterthoughts: true}], // ++ и -- только в циклах
         'no-param-reassign': ['error', {props: false}], // разрешает модифицировать параметры функций
-        'max-len': ['error', {
-            code: 120,
-            ignoreComments: true,
-            ignoreTrailingComments: true,
-        }],
+        'max-len': [
+            'error',
+            {
+                code: 120,
+                ignoreComments: true,
+                ignoreTrailingComments: true,
+            },
+        ],
         'object-curly-newline': ['error', {multiline: true, minProperties: 3}], // если в объекте более 2 полей, заставит писать их с новой строки
         'consistent-return': 'off', // ругает если не вернул что-то из функции, но игнорит если вернул undefined
         'no-shadow': ['warn'], // бесит, тупо бесит
