@@ -7,8 +7,135 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  USER
+  REGISTER
+  ADMIN
+}
+
+enum IssuedDocType {
+  EXTRACT
+  CERTIFICATE
+}
+
+enum IssuedDocStatus {
+  WAITING_PAYMENT
+  RECIEVED
+  DEVIED
+  PROCESSING
+}
+
+enum LogAction {
+  CIVIL_ACT_UPDATE
+  CIVIL_ACT_ACTIVATE
+  CIVIL_ACT_DEACTIVATE
+  REQUEST_EXTRACT
+  REQUEST_CERTIFICATE
+  ISSUE_EXTRACT
+  ISSUE_CERTIFICATE
+  LOG_IN
+  LOG_OUT
+}
+
+enum ActionStatus {
+  SUCCESS
+  FAIL
+}
+
 model User {
-  id    String  @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  email String  @unique
-  name  String?
+  id                 String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  organization       Organization      @relation(fields: [organizationId], references: [id])
+  organizationId     String            @db.Uuid
+  email              String            @unique
+  passwordHash       String
+  login              String            @unique
+  role               Role
+  firstName          String
+  lastName           String
+  middleName         String
+  birthdate          DateTime
+  birthplace         String
+  residence          String
+  workPosition       String
+  requestedDocuments IssuedDoctument[] @relation("Requested")
+  issuedDocuments    IssuedDoctument[] @relation("Issued")
+  ActionLog          ActionLog[]
+}
+
+model Organization {
+  id              String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  type            String
+  name            String
+  location        String
+  registers       User[]
+  IssuedDoctument IssuedDoctument[]
+}
+
+model PassportData {
+  id                           String           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  issuingAuthority             IssuingAuthority @relation(fields: [issuingAuthorityId], references: [identificationCode])
+  issuingAuthorityId           Int
+  series                       Int
+  passportNumber               BigInt
+  registrationDate             DateTime
+  issueDate                    DateTime
+  expirationDate               DateTime
+  taxpayerIdentificationNumber BigInt
+  civilStatusActs              CivilStatusAct[]
+}
+
+model IssuingAuthority {
+  identificationCode Int            @id @unique
+  divisionName       String
+  administrationName String
+  address            String
+  issuedPassports    PassportData[]
+}
+
+model CivilStatusAct {
+  id              String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  actType         ActType           @relation(fields: [actTypeId], references: [id])
+  actTypeId       String            @db.Uuid
+  passportData    PassportData      @relation(fields: [passportDataId], references: [id])
+  passportDataId  String            @db.Uuid
+  isActive        Boolean
+  currentStatus   Json
+  IssuedDoctument IssuedDoctument[]
+  ActionLog       ActionLog[]
+}
+
+model ActType {
+  id       String           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  typeName String
+  acts     CivilStatusAct[]
+}
+
+model IssuedDoctument {
+  id                    String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  requester             User            @relation(fields: [requesterId], references: [id], name: "Requested")
+  requesterId           String          @db.Uuid
+  register              User            @relation(fields: [registerId], references: [id], name: "Issued")
+  registerId            String          @db.Uuid
+  civilAct              CivilStatusAct  @relation(fields: [civilActId], references: [id])
+  civilActId            String          @db.Uuid
+  issuingOrganization   Organization    @relation(fields: [issuingOrganizationId], references: [id])
+  issuingOrganizationId String          @db.Uuid
+  type                  IssuedDocType
+  status                IssuedDocStatus
+  requestDate           DateTime
+  processedDate         DateTime
+  serialCode            Int
+}
+
+model ActionLog {
+  id               String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  user             User            @relation(fields: [userId], references: [id])
+  userId           String          @db.Uuid
+  civilStatusAct   CivilStatusAct? @relation(fields: [civilStatusActId], references: [id])
+  civilStatusActId String?         @db.Uuid
+  type             LogAction
+  date             DateTime
+  actionStatus     ActionStatus
+  newSnapshot      Json?
+  oldSnapshoy      Json?
 }
