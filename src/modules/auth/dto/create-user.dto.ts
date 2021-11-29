@@ -1,24 +1,22 @@
 import {
-    IsDate, IsEmail, IsNotEmpty, IsString, MaxLength, MinLength,
+    IsDateString, IsEmail, IsEnum, IsNotEmpty, IsString, MaxLength, MinLength,
 } from 'class-validator';
 import {Role, User} from '.prisma/client';
 
-export class CreateUserDTO implements Omit<User, 'id'> {
+export class CreateUserDTO implements Omit<User, 'id'|'passwordHash'> {
     organizationId: string;
 
     @IsEmail()
         email: string;
-
-    @IsNotEmpty()
-    @IsString()
-        passwordHash: string;
 
     @IsString()
     @MinLength(3)
     @MaxLength(50)
         login: string;
 
-    role: Role;
+    @IsEnum(Role)
+        role: Role;
+
     @IsString()
     @MinLength(3)
     @MaxLength(50)
@@ -34,7 +32,7 @@ export class CreateUserDTO implements Omit<User, 'id'> {
     @MaxLength(50)
         middleName: string;
 
-    @IsDate()
+    @IsDateString()
         birthdate: Date;
 
     @IsNotEmpty()

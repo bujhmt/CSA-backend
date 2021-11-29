@@ -44,12 +44,12 @@ enum ActionStatus {
 
 model User {
   id                 String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  organization       Organization      @relation(fields: [organizationId], references: [id])
-  organizationId     String            @db.Uuid
+  organization       Organization?     @relation(fields: [organizationId], references: [id])
+  organizationId     String?           @db.Uuid
   email              String            @unique
   passwordHash       String
   login              String            @unique
-  role               Role
+  role               Role              @default(USER)
   firstName          String
   lastName           String
   middleName         String

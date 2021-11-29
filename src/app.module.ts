@@ -2,8 +2,8 @@ import {Module} from '@nestjs/common';
 import {ConfigModule} from '@nestjs/config';
 import {resolve} from 'path';
 import {envExtractor} from './utils/env-extractor.util';
-import {DatabaseModule} from './modules/database/database.module';
 import {PublicModule} from './modules/public/public.module';
+import {AuthModule} from './modules/auth/auth.module';
 
 @Module({
     imports: [
@@ -12,8 +12,8 @@ import {PublicModule} from './modules/public/public.module';
             expandVariables: true,
             envFilePath: resolve(__dirname, '../config', envExtractor()),
         }),
-        DatabaseModule,
         PublicModule,
+        AuthModule,
     ],
     controllers: [],
     providers: [],

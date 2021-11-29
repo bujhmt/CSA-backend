@@ -40,8 +40,9 @@ export class AuthService {
     }
 
     public async create(userDTO: CreateUserDTO): Promise<CreateUserToken> {
-        const pass = await this.hashPassword(userDTO.password);
-        const newUser = await this.userService.create({...userDTO, passwordHash: pass});
+        const {password, ...userData} = userDTO;
+        const pass = await this.hashPassword(password);
+        const newUser = await this.userService.create({...userData, passwordHash: pass});
         const {passwordHash, ...user} = newUser;
         const token = await this.generateToken(user);
         return {user, token};
