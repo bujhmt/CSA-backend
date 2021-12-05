@@ -49,5 +49,6 @@ module.exports = {
         'no-unused-expressions': ['error', {allowTernary: true}], // разрешил тернарные операторы, а так название говорит за себя
         'no-console': 'error', // бан или вещ
         'lines-between-class-members': ['error', 'always', {exceptAfterSingleLine: true}], // между метожами пробел, между переменными нет
+        'linebreak-style': 'off',
     },
 };

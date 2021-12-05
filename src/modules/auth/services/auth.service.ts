@@ -10,15 +10,15 @@ import {CreateUserToken} from '../interfaces/create-user-token.interface';
 export class AuthService {
     constructor(private readonly userService: UsersService, private readonly jwtService: JwtService) {}
 
-    private async comparePassword(pass: string, hash: string): Promise<boolean> {
+    private comparePassword(pass: string, hash: string): Promise<boolean> {
         return argon2.verify(hash, pass);
     }
 
-    private async hashPassword(password: string): Promise<string> {
+    private hashPassword(password: string): Promise<string> {
         return argon2.hash(password);
     }
 
-    private async generateToken(user: Partial<User>): Promise<string> {
+    private generateToken(user: Partial<User>): Promise<string> {
         return this.jwtService.signAsync(user);
     }
 
@@ -35,7 +35,7 @@ export class AuthService {
         return userData;
     }
 
-    public async login(user: User): Promise<string> {
+    public login(user: User): Promise<string> {
         return this.generateToken(user);
     }
 

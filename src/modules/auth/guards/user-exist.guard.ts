@@ -24,6 +24,7 @@ export class DoesUserExist implements CanActivate {
         if (userExist) {
             throw new ForbiddenException('Email already in use');
         }
+
         return true;
     }
 

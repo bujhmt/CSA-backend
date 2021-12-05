@@ -9,7 +9,10 @@ import {UsersService} from '../services/users.service';
 export class UsersController {
     private readonly logger = new Logger(UsersController.name);
 
-    constructor(private readonly usersService: UsersService) {}
+    constructor(
+        private readonly usersService: UsersService,
+    ) {
+    }
 
     @Get('/')
     async getUsers(): Promise<Answer<Partial<User>[]>> {

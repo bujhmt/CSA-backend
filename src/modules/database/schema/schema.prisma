@@ -43,7 +43,7 @@ enum ActionStatus {
 }
 
 model User {
-  id                 String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id                 String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   organization       Organization?     @relation(fields: [organizationId], references: [id])
   organizationId     String?           @db.Uuid
   email              String?           @unique
@@ -63,7 +63,7 @@ model User {
 }
 
 model Organization {
-  id              String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   type            String
   name            String
   location        String
@@ -72,7 +72,7 @@ model Organization {
 }
 
 model PassportData {
-  id                           String           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id                           String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   issuingAuthority             IssuingAuthority @relation(fields: [issuingAuthorityId], references: [identificationCode])
   issuingAuthorityId           Int
   series                       Int
@@ -93,7 +93,7 @@ model IssuingAuthority {
 }
 
 model CivilStatusAct {
-  id              String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   actType         ActType           @relation(fields: [actTypeId], references: [id])
   actTypeId       String            @db.Uuid
   passportData    PassportData      @relation(fields: [passportDataId], references: [id])
@@ -105,13 +105,13 @@ model CivilStatusAct {
 }
 
 model ActType {
-  id       String           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id       String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   typeName String
   acts     CivilStatusAct[]
 }
 
 model IssuedDoctument {
-  id                    String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id                    String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   requester             User            @relation(fields: [requesterId], references: [id], name: "Requested")
   requesterId           String          @db.Uuid
   register              User            @relation(fields: [registerId], references: [id], name: "Issued")
@@ -128,7 +128,7 @@ model IssuedDoctument {
 }
 
 model ActionLog {
-  id               String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id               String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   user             User            @relation(fields: [userId], references: [id])
   userId           String          @db.Uuid
   civilStatusAct   CivilStatusAct? @relation(fields: [civilStatusActId], references: [id])
@@ -138,4 +138,17 @@ model ActionLog {
   actionStatus     ActionStatus
   newSnapshot      Json?
   oldSnapshoy      Json?
+}
+
+model Student {
+  id   String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name String
+  Mark Mark[] @relation("StudentMark")
+}
+
+model Mark {
+  id         String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  mark       String  @db.VarChar(10)
+  student    Student @relation("StudentMark", fields: [student_id], references: [id])
+  student_id String  @db.Uuid
 }

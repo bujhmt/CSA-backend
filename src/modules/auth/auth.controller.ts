@@ -1,12 +1,14 @@
 import {
-    Controller, Post, UseGuards, Request, Body, UseFilters,
+    Controller, Post, UseGuards, Body, UseFilters, Request,
 } from '@nestjs/common';
 import {RequestValidationFilter} from 'src/filters/request-validation.filter';
+import {Request as RequestType} from 'express';
 import {CreateUserDTO} from './dto/create-user.dto';
 import {LocalAuthGuard} from './guards/local-auth.guard';
 import {DoesUserExist} from './guards/user-exist.guard';
 import {CreateUserToken} from './interfaces/create-user-token.interface';
 import {AuthService} from './services/auth.service';
+import {User} from '../database/interfaces/user.interface';
 
 @Controller('auth')
 export class AuthController {
@@ -14,14 +16,14 @@ export class AuthController {
 
     @UseGuards(LocalAuthGuard)
     @Post('login')
-    login(@Request() req): Promise<string> {
+    login(@Request() req: RequestType & {user: User}): Promise<string> {
         return this.authService.login(req.user);
     }
 
     @UseFilters(RequestValidationFilter)
     @UseGuards(DoesUserExist)
     @Post('signup')
-    signUp(@Body() user: CreateUserDTO): Promise<CreateUserToken> {
-        return this.authService.create(user);
+    signUp(@Body() createUserDTO: CreateUserDTO): Promise<CreateUserToken> {
+        return this.authService.create(createUserDTO);
     }
 }
