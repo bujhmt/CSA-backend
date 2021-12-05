@@ -22,8 +22,8 @@ export class AuthService {
         return this.jwtService.signAsync(user);
     }
 
-    async getUserIfValidCredentials(email: string, pass: string): Promise<Omit<Partial<User>, 'passwordHash'> | null> {
-        const user = await this.userService.getUserByEmail(email);
+    async getUserIfValidCredentials(login: string, pass: string): Promise<Omit<Partial<User>, 'passwordHash'> | null> {
+        const user = await this.userService.getUserByLogin(login);
         if (!user) {
             return null;
         }
