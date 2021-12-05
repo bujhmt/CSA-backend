@@ -43,7 +43,6 @@ export class CreateUserDTO implements Omit<User, 'id'|'passwordHash'> {
     @IsString()
         residence: string;
 
-    @IsNotEmpty()
     @IsString()
         workPosition: string;
 
