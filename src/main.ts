@@ -9,12 +9,16 @@ async function bootstrap() {
 
     const configService = app.get<ConfigService<Environment>>(ConfigService);
     const port = configService.get('PORT');
+
+    app.enableCors({origin: ['http://localhost:8080']});
+
     app.useGlobalPipes(
         new ValidationPipe({
             transform: true,
             whitelist: true,
         }),
     );
+
     Logger.log(`Application successfully started on ${port} port`, 'Bootstrap');
     await app.listen(port);
 }

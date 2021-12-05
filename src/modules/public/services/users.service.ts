@@ -6,7 +6,7 @@ import {PrismaService} from '../../database/services/prisma.service';
 export class UsersService {
     constructor(private readonly prismaService: PrismaService) {}
 
-    create(user: Omit<User, 'id'>) {
+    create(user: {passwordHash: string, login: string}) {
         const newUser = this.prismaService.user.create({data: {...user}});
         return newUser;
     }
@@ -25,6 +25,16 @@ export class UsersService {
             where: {email},
             select: {
                 email: true,
+                passwordHash: true,
+            },
+        });
+    }
+
+    getUserByLogin(login: string): Promise<Partial<User>> {
+        return this.prismaService.user.findUnique({
+            where: {login},
+            select: {
+                login: true,
                 passwordHash: true,
             },
         });

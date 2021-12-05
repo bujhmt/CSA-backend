@@ -23,7 +23,7 @@ export class AuthController {
     @UseFilters(RequestValidationFilter)
     @UseGuards(DoesUserExist)
     @Post('signup')
-    signUp(@Body() user: CreateUserDTO): Promise<CreateUserToken> {
-        return this.authService.create(user);
+    signUp(@Body() createUserDTO: CreateUserDTO): Promise<CreateUserToken> {
+        return this.authService.create(createUserDTO);
     }
 }

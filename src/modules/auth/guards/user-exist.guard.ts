@@ -9,10 +9,12 @@ export class DoesUserExist implements CanActivate {
     constructor(private readonly userService: UsersService) {}
 
     async validateRequest(req): Promise<boolean> {
-        const userExist = await this.userService.getUserByEmail(req.body.email);
+        const userExist = await this.userService.getUserByLogin(req.body.login);
+
         if (userExist) {
             throw new ForbiddenException('Email already in use');
         }
+
         return true;
     }
 
