@@ -22,7 +22,7 @@ export class DoesUserExist implements CanActivate {
 
         const userExist = await this.userService.getUserByLogin(req.body.login);
         if (userExist) {
-            throw new ForbiddenException('Email already in use');
+            throw new ForbiddenException('Login already in use');
         }
 
         return true;
