@@ -34,6 +34,7 @@ export class UsersService {
         return this.prismaService.user.findUnique({
             where: {login},
             select: {
+                id: true,
                 login: true,
                 passwordHash: true,
             },

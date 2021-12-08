@@ -14,12 +14,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         });
     }
 
-    async validate(payload: Pick<User, 'id'>): Promise<Pick<User, 'id'>> {
-        const user = await this.userService.getUserById(payload.id);
+    async validate(payload: Pick<User, 'login'>): Promise<Partial<User>> {
+        const user = await this.userService.getUserByLogin(payload.login);
         if (!user) {
             throw new UnauthorizedException('User is not authorized');
         }
 
-        return payload;
+        return user;
     }
 }

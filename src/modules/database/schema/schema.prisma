@@ -139,16 +139,3 @@ model ActionLog {
   newSnapshot      Json?
   oldSnapshoy      Json?
 }
-
-model Student {
-  id   String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name String
-  Mark Mark[] @relation("StudentMark")
-}
-
-model Mark {
-  id         String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  mark       String  @db.VarChar(10)
-  student    Student @relation("StudentMark", fields: [student_id], references: [id])
-  student_id String  @db.Uuid
-}
