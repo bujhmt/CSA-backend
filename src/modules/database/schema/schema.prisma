@@ -97,7 +97,6 @@ model CivilStatusAct {
   passportData    PassportData      @relation(fields: [passportDataId], references: [id])
   passportDataId  String            @db.Uuid
   isActive        Boolean
-  currentStatus   Json
   IssuedDoctument IssuedDocument[]
   ActionLog       ActionLog[]
 }

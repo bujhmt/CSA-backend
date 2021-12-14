@@ -11,7 +11,7 @@ export class IssuedDocsService {
     ) {
     }
 
-    public getUserIssuedDocs(user: User): Promise<[Partial<IssuedDocument>[], number]> {
+    public getUserIssuedDocs(user: Partial<User>): Promise<[Partial<IssuedDocument>[], number]> {
         const where: Prisma.IssuedDocumentWhereInput = {requesterId: user.id};
 
         return Promise.all([
