@@ -13,15 +13,10 @@ enum Role {
   ADMIN
 }
 
-enum IssuedDocType {
-  EXTRACT
-  CERTIFICATE
-}
-
 enum IssuedDocStatus {
   WAITING_PAYMENT
-  RECIEVED
-  DEVIED
+  RECEIVED
+  DENIED
   PROCESSING
 }
 
@@ -110,7 +105,7 @@ model ActType {
   acts     CivilStatusAct[]
 }
 
-model IssuedDoctument {
+model IssuedDocument {
   id                    String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   requester             User            @relation(fields: [requesterId], references: [id], name: "Requested")
   requesterId           String          @db.Uuid
@@ -120,7 +115,7 @@ model IssuedDoctument {
   civilActId            String          @db.Uuid
   issuingOrganization   Organization    @relation(fields: [issuingOrganizationId], references: [id])
   issuingOrganizationId String          @db.Uuid
-  type                  IssuedDocType
+  type                  String
   status                IssuedDocStatus
   requestDate           DateTime
   processedDate         DateTime
