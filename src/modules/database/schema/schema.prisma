@@ -54,8 +54,8 @@ model User {
   birthplace         String?
   residence          String?
   workPosition       String?
-  requestedDocuments IssuedDoctument[] @relation("Requested")
-  issuedDocuments    IssuedDoctument[] @relation("Issued")
+  requestedDocuments IssuedDocument[] @relation("Requested")
+  issuedDocuments    IssuedDocument[] @relation("Issued")
   ActionLog          ActionLog[]
 }
 
@@ -65,7 +65,7 @@ model Organization {
   name            String
   location        String
   registers       User[]
-  IssuedDoctument IssuedDoctument[]
+  IssuedDoctument IssuedDocument[]
 }
 
 model PassportData {
@@ -98,7 +98,7 @@ model CivilStatusAct {
   passportDataId  String            @db.Uuid
   isActive        Boolean
   currentStatus   Json
-  IssuedDoctument IssuedDoctument[]
+  IssuedDoctument IssuedDocument[]
   ActionLog       ActionLog[]
 }
 
