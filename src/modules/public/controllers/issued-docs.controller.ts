@@ -2,10 +2,10 @@ import {
     Controller, Get, Logger, UseGuards, Request,
 } from '@nestjs/common';
 import {JwtAuthGuard} from 'src/modules/auth/guards/jwt-auth.guard';
-import {IssuedDoctument} from '.prisma/client';
 import {IssuedDocsService} from '../services/issued-docs.service';
 import {AuthorizedRequest} from '../../../interfaces/authorized-request.interface';
 import {Answer} from '../../../interfaces/answer.interface';
+import {IssuedDocument} from '../../database/interfaces/issued-document.interface';
 
 @Controller('/issued-docs')
 @UseGuards(JwtAuthGuard)
@@ -18,7 +18,7 @@ export class IssuedDocsController {
     }
 
     @Get('/')
-    async getIssuedDocs(@Request() {user}: AuthorizedRequest): Promise<Answer<Partial<IssuedDoctument>[]>> {
+    async getIssuedDocs(@Request() {user}: AuthorizedRequest): Promise<Answer<Partial<IssuedDocument>[]>> {
         try {
             const [data, total] = await this.issuedDocsService.getUserIssuedDocs(user);
 
