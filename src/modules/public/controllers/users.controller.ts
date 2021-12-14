@@ -1,6 +1,7 @@
 import {
-    Controller, Get, Logger,
+    Controller, Get, Logger, Post, UseInterceptors,
 } from '@nestjs/common';
+import {FileFieldsInterceptor} from '@nestjs/platform-express';
 import {Answer} from '../../../interfaces/answer.interface';
 import {User} from '../../database/interfaces/user.interface';
 import {UsersService} from '../services/users.service';
@@ -12,6 +13,19 @@ export class UsersController {
     constructor(
         private readonly usersService: UsersService,
     ) {
+    }
+
+    @Post('/info')
+    @UseInterceptors(FileFieldsInterceptor([
+        {name: 'family', maxCount: 64},
+        {name: 'land', maxCount: 64},
+        {name: 'deadDebt', maxCount: 64},
+        {name: 'childrenPoA', maxCount: 64},
+        {name: 'insurancy', maxCount: 64},
+        {name: 'inheritance', maxCount: 64},
+    ]))
+    postInfo() {
+
     }
 
     @Get('/')

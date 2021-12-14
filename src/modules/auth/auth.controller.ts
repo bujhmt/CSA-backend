@@ -16,8 +16,8 @@ export class AuthController {
 
     @UseGuards(LocalAuthGuard)
     @Post('login')
-    login(@Request() req: RequestType & {user: User}): Promise<string> {
-        return this.authService.login(req.user);
+    async login(@Request() req: RequestType & {user: User}): Promise<{token: string}> {
+        return {token: await this.authService.login(req.user)};
     }
 
     @UseFilters(RequestValidationFilter)
