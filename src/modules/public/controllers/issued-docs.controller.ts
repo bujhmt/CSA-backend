@@ -8,6 +8,7 @@ import {AuthorizedRequest} from '../../../interfaces/authorized-request.interfac
 import {Answer} from '../../../interfaces/answer.interface';
 
 @Controller('/issued-docs')
+@UseGuards(JwtAuthGuard)
 export class IssuedDocsController {
     private readonly logger = new Logger(IssuedDocsController.name);
 
@@ -16,7 +17,6 @@ export class IssuedDocsController {
     ) {
     }
 
-    @UseGuards(JwtAuthGuard)
     @Get('/')
     async getIssuedDocs(@Request() {user}: AuthorizedRequest): Promise<Answer<Partial<IssuedDoctument>[]>> {
         try {

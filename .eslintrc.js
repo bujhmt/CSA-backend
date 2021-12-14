@@ -40,7 +40,7 @@ module.exports = {
                 ignoreTrailingComments: true,
             },
         ],
-        'object-curly-newline': ['error', {multiline: true, minProperties: 3}], // если в объекте более 2 полей, заставит писать их с новой строки
+        'object-curly-newline': ['error', {multiline: true, minProperties: 4}], // если в объекте более 2 полей, заставит писать их с новой строки
         'consistent-return': 'off', // ругает если не вернул что-то из функции, но игнорит если вернул undefined
         'no-shadow': ['warn'], // бесит, тупо бесит
         'no-restricted-syntax': 'off', // осуждает за for of => Макс крушить => off
