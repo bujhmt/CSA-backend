@@ -50,4 +50,8 @@ export class UsersService {
             },
         });
     }
+
+    addInfoToUser(id: string){
+        
+    }
 }
