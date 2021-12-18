@@ -4,7 +4,7 @@ import {
 import {FileFieldsInterceptor} from '@nestjs/platform-express';
 import {Answer} from '../../../interfaces/answer.interface';
 import {User} from '../../database/interfaces/user.interface';
-import {UsersService} from '../services/users.service';
+import {UsersService} from '../../shared/services/users.service';
 
 @Controller('/users')
 export class UsersController {
@@ -24,9 +24,6 @@ export class UsersController {
         {name: 'insurancy', maxCount: 64},
         {name: 'inheritance', maxCount: 64},
     ]))
-    postInfo() {
-
-    }
 
     @Get('/')
     async getUsers(): Promise<Answer<Partial<User>[]>> {

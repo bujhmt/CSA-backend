@@ -1,7 +1,7 @@
 import {ForbiddenException, Injectable} from '@nestjs/common';
 import {PassportStrategy} from '@nestjs/passport';
 import {ExtractJwt, Strategy} from 'passport-jwt';
-import {UsersService} from 'src/modules/public/services/users.service';
+import {UsersService} from 'src/modules/shared/services/users.service';
 import {User} from '../../database/interfaces/user.interface';
 
 @Injectable()

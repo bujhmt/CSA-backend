@@ -4,11 +4,12 @@ import {PrismaService} from '../../database/services/prisma.service';
 
 @Injectable()
 export class UsersService {
-    constructor(private readonly prismaService: PrismaService) {}
+    constructor(
+        private readonly prismaService: PrismaService,
+    ) {}
 
     create(user: {passwordHash: string, login: string}) {
-        const newUser = this.prismaService.user.create({data: {...user}});
-        return newUser;
+        return this.prismaService.user.create({data: {...user}});
     }
 
     getUsers(): Promise<Partial<User>[]> {
@@ -49,9 +50,5 @@ export class UsersService {
                 passwordHash: true,
             },
         });
-    }
-
-    addInfoToUser(id: string){
-        
     }
 }

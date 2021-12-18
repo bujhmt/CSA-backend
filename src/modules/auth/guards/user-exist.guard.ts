@@ -3,7 +3,7 @@ import {
 } from '@nestjs/common';
 import {validate} from 'class-validator';
 import {Observable} from 'rxjs';
-import {UsersService} from 'src/modules/public/services/users.service';
+import {UsersService} from 'src/modules/shared/services/users.service';
 import {CreateUserDTO} from '../dto/create-user.dto';
 
 @Injectable()

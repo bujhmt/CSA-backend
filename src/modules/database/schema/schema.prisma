@@ -56,7 +56,15 @@ model User {
   workPosition       String?
   requestedDocuments IssuedDocument[] @relation("Requested")
   issuedDocuments    IssuedDocument[] @relation("Issued")
+  userDocuments      UserDocument[]
   ActionLog          ActionLog[]
+}
+
+model UserDocument {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  document String
+  user     User   @relation(fields: [userId], references: [id])
+  userId   String @db.Uuid
 }
 
 model Organization {
@@ -115,8 +123,8 @@ model IssuedDocument {
   registerId            String          @db.Uuid
   civilAct              CivilStatusAct  @relation(fields: [civilActId], references: [id])
   civilActId            String          @db.Uuid
-  issuingOrganization   Organization    @relation(fields: [issuingOrganizationId], references: [id])
-  issuingOrganizationId String          @db.Uuid
+  issuingOrganization   Organization?    @relation(fields: [issuingOrganizationId], references: [id])
+  issuingOrganizationId String?          @db.Uuid
   type                  String
   status                IssuedDocStatus
   requestDate           DateTime
