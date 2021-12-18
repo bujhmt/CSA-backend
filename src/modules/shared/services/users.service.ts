@@ -12,15 +12,6 @@ export class UsersService {
         return this.prismaService.user.create({data: {...user}});
     }
 
-    getUsers(): Promise<Partial<User>[]> {
-        return this.prismaService.user.findMany({
-            select: {
-                email: true,
-                login: true,
-            },
-        });
-    }
-
     getUserByEmail(email: string): Promise<Partial<User>> {
         return this.prismaService.user.findUnique({
             where: {email},

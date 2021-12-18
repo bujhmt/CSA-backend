@@ -119,16 +119,16 @@ model IssuedDocument {
   id                    String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   requester             User            @relation(fields: [requesterId], references: [id], name: "Requested")
   requesterId           String          @db.Uuid
-  register              User            @relation(fields: [registerId], references: [id], name: "Issued")
-  registerId            String          @db.Uuid
+  register              User?            @relation(fields: [registerId], references: [id], name: "Issued")
+  registerId            String?          @db.Uuid
   civilAct              CivilStatusAct  @relation(fields: [civilActId], references: [id])
   civilActId            String          @db.Uuid
   issuingOrganization   Organization?    @relation(fields: [issuingOrganizationId], references: [id])
   issuingOrganizationId String?          @db.Uuid
   type                  String
-  status                IssuedDocStatus
-  requestDate           DateTime
-  processedDate         DateTime
+  status                IssuedDocStatus @default(RECEIVED)
+  requestDate           DateTime        @default(now())
+  processedDate         DateTime?
   serialCode            Int
 }
 
