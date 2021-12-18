@@ -30,12 +30,12 @@ export class IssuedDocsService {
         ]);
     }
 
-    public async addIssuedDocsRequest(user: Partial<User>, type: string): Promise<Partial<IssuedDocument>> {
-        // const where: Prisma.IssuedDocumentWhereInput = {requesterId: user.id};
+    public async addIssuedDocsRequest(user: Partial<User>, type: string, actType: string):
+    Promise<Partial<IssuedDocument>> {
         const {id: civilActId} = await this.prismaService.civilStatusAct.findFirst({
             where: {
                 passportData: {owner: {id: user.id}},
-                actType: {typeName: type},
+                actType: {typeName: actType},
             },
             select: {id: true},
         });

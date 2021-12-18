@@ -39,17 +39,11 @@ export class IssuedDocsController {
     }
 
     @Post('/request')
-    @UseInterceptors(
-        new FieldTransformInterceptor<string | Date, string>({
-            field: 'requestDate',
-            recursive: true,
-            handler: (date) => format(new Date(date), 'dd.MM.yyyy'),
-        }),
-    )
-    async addIssuedDocsRequest(@Request() {user}: AuthorizedRequest, @Body() {type}: {type: string}):
+    async addIssuedDocsRequest(@Request() {user}: AuthorizedRequest, @Body() {type, actType}:
+    {type: string, actType: string}):
     Promise<Answer<Partial<IssuedDocument>>> {
         try {
-            const data = await this.issuedDocsService.addIssuedDocsRequest(user, type);
+            const data = await this.issuedDocsService.addIssuedDocsRequest(user, type, actType);
 
             return {success: true, data};
         } catch (err) {
