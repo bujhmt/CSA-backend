@@ -1,7 +1,4 @@
-import {
-    Controller, Get, Logger, Post, UseInterceptors,
-} from '@nestjs/common';
-import {FileFieldsInterceptor} from '@nestjs/platform-express';
+import {Controller, Get, Logger} from '@nestjs/common';
 import {Answer} from '../../../interfaces/answer.interface';
 import {User} from '../../database/interfaces/user.interface';
 import {UsersService} from '../services/users.service';
@@ -15,18 +12,23 @@ export class UsersController {
     ) {
     }
 
-    @Post('/info')
-    @UseInterceptors(FileFieldsInterceptor([
-        {name: 'family', maxCount: 64},
-        {name: 'land', maxCount: 64},
-        {name: 'deadDebt', maxCount: 64},
-        {name: 'childrenPoA', maxCount: 64},
-        {name: 'insurancy', maxCount: 64},
-        {name: 'inheritance', maxCount: 64},
-    ]))
-    postInfo() {
+    //     @Post('/info')
+    //     @UseInterceptors(FileFieldsInterceptor([
+    //         {name: 'family', maxCount: 64},
+    //         {name: 'land', maxCount: 64},
+    //         {name: 'deadDebt', maxCount: 64},
+    //         {name: 'childrenPoA', maxCount: 64},
+    //         {name: 'insurancy', maxCount: 64},
+    //         {name: 'inheritance', maxCount: 64},
+    //     ]))
+    //     postInfo(
+    // @UploadedFiles() files: { avatar?: Express.Multer.File[], background?: Express.Multer.File[] },
+    //              @Body() {
+    //         firstName, middleName, passportNumber, passportSeries, secondName, taxpayerIdentificationNumber,
+    //     }: AddInfoDRO,
+    //     ) {
 
-    }
+    //     }
 
     @Get('/')
     async getUsers(): Promise<Answer<Partial<User>[]>> {

@@ -1,4 +1,5 @@
 import {Injectable} from '@nestjs/common';
+import {randomInt} from 'crypto';
 import {PrismaService} from '../../database/services/prisma.service';
 import {Prisma} from '.prisma/client';
 import {User} from '../../database/interfaces/user.interface';
@@ -27,5 +28,24 @@ export class IssuedDocsService {
             }),
             this.prismaService.issuedDocument.count({where}),
         ]);
+    }
+
+    public async addIssuedDocsRequest(user: Partial<User>, type: string): Promise<Partial<IssuedDocument>> {
+        // const where: Prisma.IssuedDocumentWhereInput = {requesterId: user.id};
+        const {id: civilActId} = await this.prismaService.civilStatusAct.findFirst({
+            where: {
+                passportData: {owner: {id: user.id}},
+                actType: {typeName: type},
+            },
+            select: {id: true},
+        });
+        return this.prismaService.issuedDocument.create({
+            data: {
+                serialCode: randomInt(1000000),
+                type,
+                civilAct: {connect: {id: civilActId}},
+                requester: {connect: {id: user.id}},
+            },
+        });
     }
 }

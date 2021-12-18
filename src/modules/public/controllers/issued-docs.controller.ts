@@ -1,5 +1,5 @@
 import {
-    Controller, Get, Logger, UseGuards, Request, UseInterceptors,
+    Controller, Get, Logger, UseGuards, Request, UseInterceptors, Post, Body,
 } from '@nestjs/common';
 import {JwtAuthGuard} from 'src/modules/auth/guards/jwt-auth.guard';
 import {format} from 'date-fns';
@@ -32,6 +32,26 @@ export class IssuedDocsController {
             const [data, total] = await this.issuedDocsService.getUserIssuedDocs(user);
 
             return {success: true, data, total};
+        } catch (err) {
+            this.logger.error(err.message);
+            return {success: false};
+        }
+    }
+
+    @Post('/request')
+    @UseInterceptors(
+        new FieldTransformInterceptor<string | Date, string>({
+            field: 'requestDate',
+            recursive: true,
+            handler: (date) => format(new Date(date), 'dd.MM.yyyy'),
+        }),
+    )
+    async addIssuedDocsRequest(@Request() {user}: AuthorizedRequest, @Body() {type}: {type: string}):
+    Promise<Answer<Partial<IssuedDocument>>> {
+        try {
+            const data = await this.issuedDocsService.addIssuedDocsRequest(user, type);
+
+            return {success: true, data};
         } catch (err) {
             this.logger.error(err.message);
             return {success: false};
