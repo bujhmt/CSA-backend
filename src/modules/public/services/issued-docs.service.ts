@@ -1,5 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {randomInt} from 'crypto';
+import * as fs from 'fs';
 import {PrismaService} from '../../database/services/prisma.service';
 import {Prisma} from '.prisma/client';
 import {User} from '../../database/interfaces/user.interface';
@@ -50,5 +51,9 @@ export class IssuedDocsService {
                 requester: {connect: {id: user.id}},
             },
         });
+    }
+
+    public generateReceipt() {
+        return fs.createReadStream('./mock.pdf');
     }
 }

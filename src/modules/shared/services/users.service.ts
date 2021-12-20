@@ -16,8 +16,10 @@ export class UsersService {
         return this.prismaService.user.findUnique({
             where: {email},
             select: {
-                email: true,
+                id: true,
+                login: true,
                 passwordHash: true,
+                role: true,
             },
         });
     }
@@ -29,6 +31,7 @@ export class UsersService {
                 id: true,
                 login: true,
                 passwordHash: true,
+                role: true,
             },
         });
     }
@@ -37,8 +40,10 @@ export class UsersService {
         return this.prismaService.user.findUnique({
             where: {id},
             select: {
-                email: true,
+                id: true,
+                login: true,
                 passwordHash: true,
+                role: true,
             },
         });
     }

@@ -5,6 +5,7 @@ import {JwtAuthGuard} from '../../auth/guards/jwt-auth.guard';
 import {VerificationService} from '../services/verification.service';
 import {AuthorizedRequest} from '../../../interfaces/authorized-request.interface';
 import {Answer} from '../../../interfaces/answer.interface';
+import {Role} from '.prisma/client';
 
 @Controller('/verification')
 @UseGuards(JwtAuthGuard)
@@ -26,5 +27,10 @@ export class VerificationController {
             this.logger.error(err);
             return {success: false};
         }
+    }
+
+    @Get('/role')
+    getUserRole(@Req() {user}: AuthorizedRequest): Role {
+        return user.role;
     }
 }
