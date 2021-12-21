@@ -39,9 +39,10 @@ export class IssuedDocsController {
     }
 
     @Post('/request')
-    async addIssuedDocsRequest(@Request() {user}: AuthorizedRequest, @Body() {type}:
-    {type: string}):
-    Promise<Answer<Partial<IssuedDocument>>> {
+    async addIssuedDocsRequest(
+        @Request() {user}: AuthorizedRequest,
+        @Body() {type}: {type: string},
+    ): Promise<Answer<Partial<IssuedDocument>>> {
         try {
             const data = await this.issuedDocsService.addIssuedDocsRequest(user, type);
 
