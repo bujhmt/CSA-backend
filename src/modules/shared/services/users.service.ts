@@ -10,7 +10,6 @@ export class UsersService {
     ) {}
 
     create(user: {passwordHash: string, login: string, role: Role}) {
-        console.log(user);
         return this.prismaService.user.create({data: {...user}});
     }
 

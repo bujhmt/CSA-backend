@@ -43,7 +43,6 @@ export class AuthService {
         const {password, ...userData} = userDTO;
         const pass = await this.hashPassword(password);
         let newUser;
-        console.log('admin', admin);
         if (admin) {
             const {role} = await this.userService.getUserById(admin.id);
             if (role === Role.ADMIN) {

@@ -1,15 +1,10 @@
 import {
-    Controller, Get, Logger, UseGuards, Request, UseInterceptors, Post, Body, UploadedFiles, Res,
+    Controller, Get, Logger, UseGuards, Request, UseInterceptors, Post, Body, UploadedFiles,
 } from '@nestjs/common';
 import {JwtAuthGuard} from 'src/modules/auth/guards/jwt-auth.guard';
 import {format} from 'date-fns';
 import {UsersService} from 'src/modules/shared/services/users.service';
 import {FilesInterceptor} from '@nestjs/platform-express';
-import * as archiver from 'archiver';
-import {
-    access, accessSync, constants, createReadStream, exists,
-} from 'fs';
-import {join} from 'path';
 import {AuthorizedRequest} from '../../../interfaces/authorized-request.interface';
 import {FieldTransformInterceptor} from '../../../interceptors/field-transform.interceptor';
 import {AddInfoDTO} from '../dto/add-info.dto';
@@ -56,7 +51,6 @@ export class UserController {
     getFiles(
         @Request() {user}: AuthorizedRequest,
         @Body() {userId}: {userId: string},
-        @Res() res,
     ): Promise<string[]> {
         return this.userService.getFiles(user, userId);
     }

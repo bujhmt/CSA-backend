@@ -1,5 +1,5 @@
 import {
-    Controller, Post, UseGuards, Body, UseFilters, Request, Req,
+    Controller, Post, UseGuards, Body, UseFilters, Request,
 } from '@nestjs/common';
 import {RequestValidationFilter} from 'src/filters/request-validation.filter';
 import {Request as RequestType} from 'express';
@@ -34,7 +34,6 @@ export class AuthController {
     @Post('signup/registrator')
     signUpReg(@Request() {user}: AuthorizedRequest, @Body() createUserDTO: CreateUserDTO):
     Promise<CreateUserToken> {
-        console.log(user);
         return this.authService.create(createUserDTO, user);
     }
 }

@@ -34,30 +34,11 @@ export class IssuedDocsService {
     public async addIssuedDocsRequest(
         user: Partial<User>,
         type: string,
-        actType: string,
     ): Promise<Partial<IssuedDocument>> {
-        const {id: civilActId} = await this.prismaService.civilStatusAct.findFirst({
-            where: {
-                passportData: {owner: {id: user.id}},
-                actType: {typeName: actType},
-            },
-            select: {id: true},
-        });
-        const {id: actTypeId} = await this.prismaService.actType.findFirst({where: {typeName: actType}});
-        const {id: passId} = await this.prismaService.passportData.findFirst({where: {userId: user.id}});
         return this.prismaService.issuedDocument.create({
             data: {
                 serialCode: randomInt(1000000),
                 type,
-                civilAct: civilActId
-                    ? {
-                        create: {
-                            isActive: true,
-                            actType: {connect: {id: actTypeId}},
-                            passportData: {connect: {id: passId}},
-                        },
-                    }
-                    : {connect: {id: civilActId}},
                 requester: {connect: {id: user.id}},
             },
         });

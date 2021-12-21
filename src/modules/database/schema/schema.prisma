@@ -105,7 +105,7 @@ model CivilStatusAct {
   passportData    PassportData      @relation(fields: [passportDataId], references: [id])
   passportDataId  String            @db.Uuid
   isActive        Boolean
-  IssuedDoctument IssuedDocument[]
+  data            Json?
   ActionLog       ActionLog[]
 }
 
@@ -121,8 +121,6 @@ model IssuedDocument {
   requesterId           String          @db.Uuid
   register              User?            @relation(fields: [registerId], references: [id], name: "Issued")
   registerId            String?          @db.Uuid
-  civilAct              CivilStatusAct  @relation(fields: [civilActId], references: [id])
-  civilActId            String          @db.Uuid
   issuingOrganization   Organization?    @relation(fields: [issuingOrganizationId], references: [id])
   issuingOrganizationId String?          @db.Uuid
   type                  String

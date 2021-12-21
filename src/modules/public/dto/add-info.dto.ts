@@ -1,5 +1,5 @@
 import {
-    IsNumber, IsNumberString, IsOptional, IsString, Length, MaxLength, MinLength,
+    IsNumberString, IsString, Length, MaxLength, MinLength,
 } from 'class-validator';
 
 export class AddInfoDTO {
