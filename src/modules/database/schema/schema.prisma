@@ -41,7 +41,7 @@ model User {
   id                 String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   organization       Organization?     @relation(fields: [organizationId], references: [id])
   organizationId     String?           @db.Uuid
-  passportData       PassportData?     @relation(fields: [passportDataId], references: [id], map: "User_passportDataId_fkey")
+  passportData       PassportData?     @relation(fields: [passportDataId], references: [id])
   passportDataId     String?           @db.Uuid
   email              String?           @unique
   passwordHash       String
@@ -80,12 +80,12 @@ model PassportData {
   id                           String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   issuingAuthority             IssuingAuthority @relation(fields: [issuingAuthorityId], references: [identificationCode])
   issuingAuthorityId           Int
-  series                       Int
-  passportNumber               BigInt
-  registrationDate             DateTime
-  issueDate                    DateTime
-  expirationDate               DateTime
-  taxpayerIdentificationNumber BigInt
+  record                       String
+  passportNumber               String           @unique
+  registrationDate             DateTime?
+  issueDate                    DateTime?
+  expirationDate               DateTime?
+  taxpayerIdentificationNumber String           @unique
   civilStatusActs              CivilStatusAct[]
   owner                        User
 }
@@ -111,7 +111,7 @@ model CivilStatusAct {
 
 model ActType {
   id       String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  typeName String
+  typeName String           @unique
   acts     CivilStatusAct[]
 }
 

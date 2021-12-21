@@ -16,9 +16,9 @@ export class VerificationService {
                 userDocuments: true,
                 passportData: {
                     select: {
-                        series: true,
                         taxpayerIdentificationNumber: true,
                         passportNumber: true,
+                        record: true,
                     },
                 },
             },

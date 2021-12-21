@@ -43,11 +43,21 @@ export class IssuedDocsService {
             },
             select: {id: true},
         });
+        const {id: actTypeId} = await this.prismaService.actType.findFirst({where: {typeName: actType}});
+        const {id: passId} = await this.prismaService.passportData.findFirst({where: {userId: user.id}});
         return this.prismaService.issuedDocument.create({
             data: {
                 serialCode: randomInt(1000000),
                 type,
-                civilAct: {connect: {id: civilActId}},
+                civilAct: civilActId
+                    ? {
+                        create: {
+                            isActive: true,
+                            actType: {connect: {id: actTypeId}},
+                            passportData: {connect: {id: passId}},
+                        },
+                    }
+                    : {connect: {id: civilActId}},
                 requester: {connect: {id: user.id}},
             },
         });

@@ -17,6 +17,11 @@ export class VerificationController {
     ) {
     }
 
+    @Get('/role')
+    getUserRole(@Req() {user}: AuthorizedRequest): Role {
+        return user.role;
+    }
+
     @Get('/')
     async getVerification(@Req() {user}: AuthorizedRequest): Promise<Answer<boolean>> {
         try {
@@ -27,10 +32,5 @@ export class VerificationController {
             this.logger.error(err);
             return {success: false};
         }
-    }
-
-    @Get('/role')
-    getUserRole(@Req() {user}: AuthorizedRequest): Role {
-        return user.role;
     }
 }

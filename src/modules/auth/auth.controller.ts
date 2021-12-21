@@ -1,14 +1,16 @@
 import {
-    Controller, Post, UseGuards, Body, UseFilters, Request,
+    Controller, Post, UseGuards, Body, UseFilters, Request, Req,
 } from '@nestjs/common';
 import {RequestValidationFilter} from 'src/filters/request-validation.filter';
 import {Request as RequestType} from 'express';
+import {AuthorizedRequest} from 'src/interfaces/authorized-request.interface';
 import {CreateUserDTO} from './dto/create-user.dto';
 import {LocalAuthGuard} from './guards/local-auth.guard';
 import {DoesUserExist} from './guards/user-exist.guard';
 import {CreateUserToken} from './interfaces/create-user-token.interface';
 import {AuthService} from './services/auth.service';
 import {User} from '../database/interfaces/user.interface';
+import {JwtAuthGuard} from './guards/jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -25,5 +27,14 @@ export class AuthController {
     @Post('signup')
     signUp(@Body() createUserDTO: CreateUserDTO): Promise<CreateUserToken> {
         return this.authService.create(createUserDTO);
+    }
+
+    @UseFilters(RequestValidationFilter)
+    @UseGuards(JwtAuthGuard, DoesUserExist)
+    @Post('signup/registrator')
+    signUpReg(@Request() {user}: AuthorizedRequest, @Body() createUserDTO: CreateUserDTO):
+    Promise<CreateUserToken> {
+        console.log(user);
+        return this.authService.create(createUserDTO, user);
     }
 }

@@ -1,37 +1,33 @@
 import {
-    IsNumber, IsOptional, IsString, MaxLength, MinLength,
+    IsNumber, IsNumberString, IsOptional, IsString, Length, MaxLength, MinLength,
 } from 'class-validator';
 
-export class AddInfoDRO {
-    @IsOptional()
+export class AddInfoDTO {
     @IsString()
     @MinLength(2)
     @MaxLength(50)
-        firstName?: string;
+        firstName: string;
 
-    @IsOptional()
     @IsString()
     @MinLength(2)
     @MaxLength(50)
-        secondName?: string;
+        lastName: string;
 
-    @IsOptional()
     @IsString()
     @MinLength(2)
     @MaxLength(50)
-        middleName?: string;
+        middleName: string;
 
-    @IsOptional()
     @IsString()
-    @MinLength(2)
-    @MaxLength(50)
-        passportSeries?: string;
+    @Length(14)
+        record: string;
 
-    @IsOptional()
-    @IsNumber()
-        passportNumber?: number;
+    @IsNumberString()
+        issuingAuthority: string;
 
-    @IsOptional()
-    @IsNumber({maxDecimalPlaces: 12})
-        taxpayerIdentificationNumber?: number;
+    @IsNumberString()
+        passportNumber: string;
+
+    @IsNumberString({maxDecimalPlaces: 10})
+        taxpayerIdentificationNumber: string;
 }

@@ -1,8 +1,8 @@
 import * as argon2 from 'argon2';
-import {Injectable} from '@nestjs/common';
+import {Injectable, UnauthorizedException} from '@nestjs/common';
 import {JwtService} from '@nestjs/jwt';
 import {UsersService} from 'src/modules/shared/services/users.service';
-import {User} from '.prisma/client';
+import {Role, User} from '.prisma/client';
 import {CreateUserDTO} from '../dto/create-user.dto';
 import {CreateUserToken} from '../interfaces/create-user-token.interface';
 
@@ -39,10 +39,21 @@ export class AuthService {
         return this.generateToken(user);
     }
 
-    public async create(userDTO: CreateUserDTO): Promise<CreateUserToken> {
+    public async create(userDTO: CreateUserDTO, admin?: Partial<User>): Promise<CreateUserToken> {
         const {password, ...userData} = userDTO;
         const pass = await this.hashPassword(password);
-        const newUser = await this.userService.create({...userData, passwordHash: pass});
+        let newUser;
+        console.log('admin', admin);
+        if (admin) {
+            const {role} = await this.userService.getUserById(admin.id);
+            if (role === Role.ADMIN) {
+                newUser = await this.userService.create({...userData, passwordHash: pass, role: Role.REGISTER});
+            } else {
+                throw new UnauthorizedException();
+            }
+        } else {
+            newUser = await this.userService.create({...userData, passwordHash: pass, role: Role.USER});
+        }
         const {passwordHash, ...user} = newUser;
         const token = await this.generateToken(user);
         return {user, token};
