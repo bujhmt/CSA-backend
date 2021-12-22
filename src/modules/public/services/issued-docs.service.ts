@@ -2,7 +2,7 @@ import {Injectable, UnauthorizedException} from '@nestjs/common';
 import {randomInt} from 'crypto';
 import * as fs from 'fs';
 import {PrismaService} from '../../database/services/prisma.service';
-import {Prisma, Role} from '.prisma/client';
+import {IssuedDocStatus, Prisma, Role} from '.prisma/client';
 import {User} from '../../database/interfaces/user.interface';
 import {IssuedDocument} from '../../database/interfaces/issued-document.interface';
 
@@ -31,20 +31,47 @@ export class IssuedDocsService {
         ]);
     }
 
+    public async getAllIssuedDocs(registrator: Partial<User>): Promise<[Partial<IssuedDocument>[], number]> {
+        const isRegister = await this.prismaService.user.findUnique({
+            where: {id: registrator.id},
+            select: {
+                id: true,
+                role: true,
+                isActive: true,
+            },
+        });
+        if (isRegister.role !== Role.REGISTER || !isRegister.isActive) {
+            throw new UnauthorizedException();
+        }
+        return Promise.all([
+            this.prismaService.issuedDocument.findMany({
+                select: {
+                    serialCode: true,
+                    type: true,
+                    requestDate: true,
+                    processedDate: true,
+                    status: true,
+                },
+            }),
+            this.prismaService.issuedDocument.count({}),
+        ]);
+    }
+
     public async getUserIssuedDoc(
         registrator: Pick<User, 'id'>,
         userId: string,
         serialCode: number,
     ):
     Promise<Partial<IssuedDocument>> {
-        const {role: isRegister} = await this.prismaService.user.findUnique({
+        const isRegister = await this.prismaService.user.findUnique({
             where: {id: registrator.id},
             select: {
                 id: true,
                 role: true,
+                isActive: true,
             },
         });
-        if (isRegister !== Role.REGISTER) {
+        if (isRegister.role !== Role.REGISTER || !isRegister.isActive) {
             throw new UnauthorizedException();
         }
 
@@ -74,6 +101,32 @@ export class IssuedDocsService {
                 serialCode: randomInt(1000000),
                 type,
                 requester: {connect: {id: user.id}},
+            },
+        });
+    }
+
+    public async addIssuedDocsResponse(
+        registrator: Pick<User, 'id'>,
+        serialCode: number,
+        file: Express.Multer.File,
+    ) {
+        const isRegister = await this.prismaService.user.findUnique({
+            where: {id: registrator.id},
+            select: {
+                id: true,
+                role: true,
+                isActive: true,
+            },
+        });
+        if (isRegister.role !== Role.REGISTER || !isRegister.isActive) {
+            throw new UnauthorizedException();
+        }
+        return this.prismaService.issuedDocument.update({
+            where: {serialCode},
+            data: {
+                processedResult: file.filename,
+                status: IssuedDocStatus.RECEIVED,
+                processedDate: new Date(Date.now()),
             },
         });
     }

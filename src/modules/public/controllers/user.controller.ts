@@ -60,7 +60,7 @@ export class UserController {
         return this.userService.getFiles(user, userId);
     }
 
-    @Put('/deactivate')
+    @Post('/deactivate')
     async deactivateUser(
         @Request() {user}: AuthorizedRequest,
         @Body() {login}: {login: string},

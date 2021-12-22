@@ -145,16 +145,15 @@ export class UsersService {
         return docs.map((doc) => doc.document);
     }
 
-    async deactivateUser(registrator: Pick<User, 'id'>, login: string): Promise<Partial<User>> {
-        const isRegister = await this.getUserById(registrator.id);
-        if (isRegister.role !== Role.ADMIN || !isRegister.isActive) {
+    async deactivateUser(admin: Pick<User, 'id'>, login: string): Promise<Partial<User>> {
+        const isAdmin = await this.getUserById(admin.id);
+        if (isAdmin.role !== Role.ADMIN || !isAdmin.isActive) {
             throw new UnauthorizedException();
         }
         const deactivatedUser = await this.prismaService.user.update({
             where: {login},
             data: {isActive: false},
         });
-
         return deactivatedUser;
     }
 }
