@@ -1,6 +1,7 @@
-import {Injectable} from '@nestjs/common';
+import {Injectable, UnauthorizedException} from '@nestjs/common';
 import {randomInt} from 'crypto';
 import * as fs from 'fs';
+import {IssuedDocStatus, Role} from '@prisma/client';
 import {PrismaService} from '../../database/services/prisma.service';
 import {Prisma} from '.prisma/client';
 import {User} from '../../database/interfaces/user.interface';
@@ -31,36 +32,8 @@ export class IssuedDocsService {
         ]);
     }
 
-<<<<<<< HEAD
-    public async getAllIssuedDocs(registrator: Partial<User>): Promise<[Partial<IssuedDocument>[], number]> {
-        const isRegister = await this.prismaService.user.findUnique({
-            where: {id: registrator.id},
-            select: {
-                id: true,
-                role: true,
-                isActive: true,
-            },
-        });
-        if (isRegister.role !== Role.REGISTER || !isRegister.isActive) {
-            throw new UnauthorizedException();
-        }
-        return Promise.all([
-            this.prismaService.issuedDocument.findMany({
-                select: {
-                    serialCode: true,
-                    type: true,
-                    requestDate: true,
-                    processedDate: true,
-                    status: true,
-                },
-            }),
-            this.prismaService.issuedDocument.count({}),
-        ]);
-    }
-
     public async getUserIssuedDoc(
         registrator: Pick<User, 'id'>,
-        userId: string,
         serialCode: number,
     ):
     Promise<Partial<IssuedDocument>> {
@@ -85,12 +58,6 @@ export class IssuedDocsService {
         // });
 
         return this.prismaService.issuedDocument.findFirst({
-=======
-    public async getIssuedDoc(
-        serialCode: number,
-    ): Promise<Partial<IssuedDocument>> {
-        return this.prismaService.issuedDocument.findUnique({
->>>>>>> 585353b47089718f599b219f1bd705108e703bb7
             include: {requester: {include: {userDocuments: true, passportData: true}}},
             where: {serialCode},
         });
@@ -125,13 +92,35 @@ export class IssuedDocsService {
         if (isRegister.role !== Role.REGISTER || !isRegister.isActive) {
             throw new UnauthorizedException();
         }
-        return this.prismaService.issuedDocument.update({
+        return (await this.prismaService.issuedDocument.updateMany({
             where: {serialCode},
             data: {
                 processedResult: file.filename,
-                status: IssuedDocStatus.RECEIVED,
+                status: IssuedDocStatus.PROCESSED,
                 processedDate: new Date(Date.now()),
             },
+        }))[0];
+    }
+
+    public async setDocStatus(
+        registrator: Pick<User, 'id'>,
+        serialCode: number,
+        status: IssuedDocStatus,
+    ) {
+        const isRegister = await this.prismaService.user.findUnique({
+            where: {id: registrator.id},
+            select: {
+                id: true,
+                role: true,
+                isActive: true,
+            },
+        });
+        if (isRegister.role !== Role.REGISTER || !isRegister.isActive) {
+            throw new UnauthorizedException();
+        }
+        return this.prismaService.issuedDocument.update({
+            where: {serialCode},
+            data: {status},
         });
     }
 

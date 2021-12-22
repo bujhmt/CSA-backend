@@ -18,6 +18,7 @@ enum IssuedDocStatus {
   RECEIVED
   DENIED
   PROCESSING
+  PROCESSED
 }
 
 enum LogAction {
@@ -118,10 +119,10 @@ model IssuedDocument {
   id                    String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   requester             User            @relation(fields: [requesterId], references: [id], name: "Requested")
   requesterId           String          @db.Uuid
-  register              User?            @relation(fields: [registerId], references: [id], name: "Issued")
-  registerId            String?          @db.Uuid
-  issuingOrganization   Organization?    @relation(fields: [issuingOrganizationId], references: [id])
-  issuingOrganizationId String?          @db.Uuid
+  register              User?           @relation(fields: [registerId], references: [id], name: "Issued")
+  registerId            String?         @db.Uuid
+  issuingOrganization   Organization?   @relation(fields: [issuingOrganizationId], references: [id])
+  issuingOrganizationId String?         @db.Uuid
   type                  String
   status                IssuedDocStatus @default(RECEIVED)
   requestDate           DateTime        @default(now())

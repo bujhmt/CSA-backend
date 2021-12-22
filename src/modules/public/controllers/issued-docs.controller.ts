@@ -1,5 +1,5 @@
 import {
-    Controller, Get, Logger, UseGuards, Request, UseInterceptors, Post, Body, Query,
+    Controller, Get, Logger, UseGuards, Request, UseInterceptors, Post, Body, Query, UploadedFile,
 } from '@nestjs/common';
 import {JwtAuthGuard} from 'src/modules/auth/guards/jwt-auth.guard';
 import {format} from 'date-fns';
@@ -10,6 +10,7 @@ import {Answer} from '../../../interfaces/answer.interface';
 import {IssuedDocument} from '../../database/interfaces/issued-document.interface';
 import {FieldTransformInterceptor} from '../../../interceptors/field-transform.interceptor';
 import {FileExtender} from '../interceptors/file-extender.interceptor';
+import {IssuedDocStatus} from '.prisma/client';
 
 @Controller('/issued-docs')
 @UseGuards(JwtAuthGuard)
@@ -32,26 +33,6 @@ export class IssuedDocsController {
     async getIssuedDocs(@Request() {user}: AuthorizedRequest): Promise<Answer<Partial<IssuedDocument>[]>> {
         try {
             const [data, total] = await this.issuedDocsService.getUserIssuedDocs(user);
-
-            return {success: true, data, total};
-        } catch (err) {
-            this.logger.error(err.message);
-            return {success: false};
-        }
-    }
-
-    @Get('/all')
-    @UseInterceptors(
-        new FieldTransformInterceptor<string | Date, string>({
-            field: 'requestDate',
-            recursive: true,
-            handler: (date) => format(new Date(date), 'dd.MM.yyyy'),
-        }),
-    )
-    async getAllIssuedDocs(@Request() {user}: AuthorizedRequest): Promise<Answer<Partial<IssuedDocument>[]>> {
-        try {
-            const [data, total] = await this.issuedDocsService.getAllIssuedDocs(user);
-
             return {success: true, data, total};
         } catch (err) {
             this.logger.error(err.message);
@@ -111,11 +92,36 @@ export class IssuedDocsController {
     )
     async getUserIssuedDoc(
         @Query('serialCode') serialCode: number,
+        @Request() {user}: AuthorizedRequest,
     ):
         Promise<Answer<Partial<IssuedDocument>>> {
         try {
-            const data = await this.issuedDocsService.getIssuedDoc(serialCode);
+            const data = await this.issuedDocsService.getUserIssuedDoc(user, serialCode);
 
+            return {success: true, data};
+        } catch (err) {
+            this.logger.error(err.message);
+            return {success: false};
+        }
+    }
+
+    @Post('/updateStatus')
+    @UseInterceptors(
+        new FieldTransformInterceptor<string | Date, string>({
+            field: 'requestDate',
+            recursive: true,
+            handler: (date) => format(new Date(date), 'dd.MM.yyyy'),
+        }),
+    )
+    async updateStatusDoc(
+        @Query('serialCode') serialCode: number,
+        @Body() {status}: {status: IssuedDocStatus},
+        @Request() {user}: AuthorizedRequest,
+    ):
+        Promise<Answer<Partial<IssuedDocument>>> {
+        try {
+            const data = await this.issuedDocsService.setDocStatus(user, serialCode, status);
+            console.log(data);
             return {success: true, data};
         } catch (err) {
             this.logger.error(err.message);
