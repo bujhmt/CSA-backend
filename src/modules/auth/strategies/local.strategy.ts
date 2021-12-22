@@ -12,7 +12,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
 
     async validate(login: string, password: string): Promise<Omit<Partial<User>, 'passwordHash'>> {
         const user = await this.authService.getUserIfValidCredentials(login, password);
-        if (!user) {
+        if (!user || !user.isActive) {
             throw new ForbiddenException('Invalid user credentials');
         }
         return user;

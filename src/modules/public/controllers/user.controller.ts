@@ -1,5 +1,5 @@
 import {
-    Controller, Get, Logger, UseGuards, Request, UseInterceptors, Post, Body, UploadedFiles,
+    Controller, Get, Logger, UseGuards, Request, UseInterceptors, Post, Body, UploadedFiles, Put,
 } from '@nestjs/common';
 import {JwtAuthGuard} from 'src/modules/auth/guards/jwt-auth.guard';
 import {format} from 'date-fns';
@@ -9,6 +9,7 @@ import {AuthorizedRequest} from '../../../interfaces/authorized-request.interfac
 import {FieldTransformInterceptor} from '../../../interceptors/field-transform.interceptor';
 import {AddInfoDTO} from '../dto/add-info.dto';
 import {User} from '.prisma/client';
+import { Answer } from 'src/interfaces/answer.interface';
 
 @Controller('/user')
 @UseGuards(JwtAuthGuard)
@@ -20,22 +21,26 @@ export class UserController {
     ) {
     }
 
-    @Post('/addDocs')
+    @Post('/addDocs/files')
     @UseInterceptors(
-        new FieldTransformInterceptor<string | Date, string>({
-            field: 'requestDate',
-            recursive: true,
-            handler: (date) => format(new Date(date), 'dd.MM.yyyy'),
-        }),
         FilesInterceptor('files', 128, {dest: 'uploads/'}),
     )
     async addDocs(
         @Request() {user}: AuthorizedRequest,
-        @Body() addInfoData: AddInfoDTO,
+        @Body() addInfoData,
         @UploadedFiles() files: Array<Express.Multer.File>,
     ):
     Promise<Partial<User>> {
-        return this.userService.addInfo(user, addInfoData, files);
+        return this.userService.addFiles(user, files);
+    }
+
+    @Post('/addDocs/info')
+    async addInfo(
+        @Request() {user}: AuthorizedRequest,
+        @Body() addInfoData,
+    ):
+    Promise<Partial<User>> {
+        return this.userService.addInfo(user, addInfoData);
     }
 
     @Get('/getInfo')
@@ -53,5 +58,17 @@ export class UserController {
         @Body() {userId}: {userId: string},
     ): Promise<string[]> {
         return this.userService.getFiles(user, userId);
+    }
+
+    @Put('/deactivate')
+    async deactivateUser(
+        @Request() {user}: AuthorizedRequest,
+        @Body() {login}: {login: string},
+    ): Promise<Answer<Partial<User>>> {
+        try {
+            return {success: true, data: await this.userService.deactivateUser(user, login)};
+        } catch {
+            return {success: false};
+        }
     }
 }

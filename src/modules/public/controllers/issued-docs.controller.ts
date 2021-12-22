@@ -39,12 +39,42 @@ export class IssuedDocsController {
     }
 
     @Post('/request')
+    @UseInterceptors(
+        new FieldTransformInterceptor<string | Date, string>({
+            field: 'requestDate',
+            recursive: true,
+            handler: (date) => format(new Date(date), 'dd.MM.yyyy'),
+        }),
+    )
     async addIssuedDocsRequest(
         @Request() {user}: AuthorizedRequest,
         @Body() {type}: {type: string},
     ): Promise<Answer<Partial<IssuedDocument>>> {
         try {
             const data = await this.issuedDocsService.addIssuedDocsRequest(user, type);
+
+            return {success: true, data};
+        } catch (err) {
+            this.logger.error(err.message);
+            return {success: false};
+        }
+    }
+
+    @Get('/user')
+    @UseInterceptors(
+        new FieldTransformInterceptor<string | Date, string>({
+            field: 'requestDate',
+            recursive: true,
+            handler: (date) => format(new Date(date), 'dd.MM.yyyy'),
+        }),
+    )
+    async getUserIssuedDoc(
+        @Request() {user}: AuthorizedRequest,
+        @Body() {userId, serialCode}: {userId: string, serialCode: number},
+    ):
+        Promise<Answer<Partial<IssuedDocument>>> {
+        try {
+            const data = await this.issuedDocsService.getUserIssuedDoc(user, userId, serialCode);
 
             return {success: true, data};
         } catch (err) {

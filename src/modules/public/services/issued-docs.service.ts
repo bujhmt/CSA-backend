@@ -1,8 +1,8 @@
-import {Injectable} from '@nestjs/common';
+import {Injectable, UnauthorizedException} from '@nestjs/common';
 import {randomInt} from 'crypto';
 import * as fs from 'fs';
 import {PrismaService} from '../../database/services/prisma.service';
-import {Prisma} from '.prisma/client';
+import {Prisma, Role} from '.prisma/client';
 import {User} from '../../database/interfaces/user.interface';
 import {IssuedDocument} from '../../database/interfaces/issued-document.interface';
 
@@ -29,6 +29,40 @@ export class IssuedDocsService {
             }),
             this.prismaService.issuedDocument.count({where}),
         ]);
+    }
+
+    public async getUserIssuedDoc(
+        registrator: Pick<User, 'id'>,
+        userId: string,
+        serialCode: number,
+    ):
+    Promise<Partial<IssuedDocument>> {
+        const {role: isRegister} = await this.prismaService.user.findUnique({
+            where: {id: registrator.id},
+            select: {
+                id: true,
+                role: true,
+            },
+        });
+        if (isRegister !== Role.REGISTER) {
+            throw new UnauthorizedException();
+        }
+
+        // this.prismaService.user.findUnique({
+        //     where: {id: userId},
+        //     include: {
+        //         passportData: true,
+        //         userDocuments: true,
+        //     },
+        // });
+
+        return this.prismaService.issuedDocument.findFirst({
+            include: {requester: {include: {userDocuments: true, passportData: true}}},
+            where: {
+                serialCode,
+                requester: {id: userId},
+            },
+        });
     }
 
     public async addIssuedDocsRequest(

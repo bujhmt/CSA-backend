@@ -4,30 +4,18 @@ import {
 
 export class AddInfoDTO {
     @IsString()
-    @MinLength(2)
-    @MaxLength(50)
-        firstName: string;
-
-    @IsString()
-    @MinLength(2)
-    @MaxLength(50)
-        lastName: string;
-
-    @IsString()
-    @MinLength(2)
-    @MaxLength(50)
-        middleName: string;
+    @MinLength(5)
+    @MaxLength(100)
+        name: string;
 
     @IsString()
     @Length(14)
         record: string;
 
     @IsNumberString()
-        issuingAuthority: string;
+        document: string;
 
     @IsNumberString()
-        passportNumber: string;
-
-    @IsNumberString({maxDecimalPlaces: 10})
+    @Length(10)
         taxpayerIdentificationNumber: string;
 }

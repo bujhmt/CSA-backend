@@ -16,7 +16,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     async validate(payload: Pick<User, 'login'>): Promise<Partial<User>> {
         const user = await this.userService.getUserByLogin(payload.login);
-        if (!user) {
+        if (!user || !user.isActive) {
             throw new ForbiddenException('User is not authorized');
         }
         return user;

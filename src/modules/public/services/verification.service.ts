@@ -17,13 +17,12 @@ export class VerificationService {
                 passportData: {
                     select: {
                         taxpayerIdentificationNumber: true,
-                        passportNumber: true,
-                        record: true,
+                        document: true,
                     },
                 },
             },
         });
 
-        return !!userDocuments.length && !!passportData?.passportNumber;
+        return !!userDocuments.length && !!passportData?.document;
     }
 }

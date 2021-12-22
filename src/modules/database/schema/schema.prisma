@@ -47,9 +47,7 @@ model User {
   passwordHash       String
   login              String            @unique
   role               Role              @default(USER)
-  firstName          String?
-  lastName           String?
-  middleName         String?
+  name               String?
   birthdate          DateTime?
   birthplace         String?
   residence          String?
@@ -58,6 +56,7 @@ model User {
   issuedDocuments    IssuedDocument[] @relation("Issued")
   userDocuments      UserDocument[]
   ActionLog          ActionLog[]
+  isActive           Boolean          @default(true)
 }
 
 model UserDocument {
@@ -78,10 +77,10 @@ model Organization {
 
 model PassportData {
   id                           String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  issuingAuthority             IssuingAuthority @relation(fields: [issuingAuthorityId], references: [identificationCode])
-  issuingAuthorityId           Int
-  record                       String
-  passportNumber               String           @unique
+  issuingAuthority             IssuingAuthority? @relation(fields: [issuingAuthorityId], references: [identificationCode])
+  issuingAuthorityId           Int?
+  record                       String           @unique
+  document                     String           @unique
   registrationDate             DateTime?
   issueDate                    DateTime?
   expirationDate               DateTime?
