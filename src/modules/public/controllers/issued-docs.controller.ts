@@ -1,5 +1,5 @@
 import {
-    Controller, Get, Logger, UseGuards, Request, UseInterceptors, Post, Body, UploadedFile,
+    Controller, Get, Logger, UseGuards, Request, UseInterceptors, Post, Body, Query,
 } from '@nestjs/common';
 import {JwtAuthGuard} from 'src/modules/auth/guards/jwt-auth.guard';
 import {format} from 'date-fns';
@@ -110,12 +110,11 @@ export class IssuedDocsController {
         }),
     )
     async getUserIssuedDoc(
-        @Request() {user}: AuthorizedRequest,
-        @Body() {userId, serialCode}: {userId: string, serialCode: number},
+        @Query('serialCode') serialCode: number,
     ):
         Promise<Answer<Partial<IssuedDocument>>> {
         try {
-            const data = await this.issuedDocsService.getUserIssuedDoc(user, userId, serialCode);
+            const data = await this.issuedDocsService.getIssuedDoc(serialCode);
 
             return {success: true, data};
         } catch (err) {

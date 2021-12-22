@@ -1,8 +1,8 @@
-import {Injectable, UnauthorizedException} from '@nestjs/common';
+import {Injectable} from '@nestjs/common';
 import {randomInt} from 'crypto';
 import * as fs from 'fs';
 import {PrismaService} from '../../database/services/prisma.service';
-import {IssuedDocStatus, Prisma, Role} from '.prisma/client';
+import {Prisma} from '.prisma/client';
 import {User} from '../../database/interfaces/user.interface';
 import {IssuedDocument} from '../../database/interfaces/issued-document.interface';
 
@@ -14,7 +14,7 @@ export class IssuedDocsService {
     }
 
     public getUserIssuedDocs(user: Partial<User>): Promise<[Partial<IssuedDocument>[], number]> {
-        const where: Prisma.IssuedDocumentWhereInput = {requesterId: user.id};
+        const where: Prisma.IssuedDocumentWhereInput = user.role === 'USER' ? {requesterId: user.id} : {};
 
         return Promise.all([
             this.prismaService.issuedDocument.findMany({
@@ -31,6 +31,7 @@ export class IssuedDocsService {
         ]);
     }
 
+<<<<<<< HEAD
     public async getAllIssuedDocs(registrator: Partial<User>): Promise<[Partial<IssuedDocument>[], number]> {
         const isRegister = await this.prismaService.user.findUnique({
             where: {id: registrator.id},
@@ -84,11 +85,14 @@ export class IssuedDocsService {
         // });
 
         return this.prismaService.issuedDocument.findFirst({
+=======
+    public async getIssuedDoc(
+        serialCode: number,
+    ): Promise<Partial<IssuedDocument>> {
+        return this.prismaService.issuedDocument.findUnique({
+>>>>>>> 585353b47089718f599b219f1bd705108e703bb7
             include: {requester: {include: {userDocuments: true, passportData: true}}},
-            where: {
-                serialCode,
-                requester: {id: userId},
-            },
+            where: {serialCode},
         });
     }
 
