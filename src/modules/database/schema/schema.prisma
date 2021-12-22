@@ -126,7 +126,7 @@ model IssuedDocument {
   status                IssuedDocStatus @default(RECEIVED)
   requestDate           DateTime        @default(now())
   processedDate         DateTime?
-  serialCode            Int
+  serialCode            Int             @unique
 }
 
 model ActionLog {

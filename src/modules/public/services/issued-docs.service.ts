@@ -1,8 +1,8 @@
-import {Injectable, UnauthorizedException} from '@nestjs/common';
+import {Injectable} from '@nestjs/common';
 import {randomInt} from 'crypto';
 import * as fs from 'fs';
 import {PrismaService} from '../../database/services/prisma.service';
-import {Prisma, Role} from '.prisma/client';
+import {Prisma} from '.prisma/client';
 import {User} from '../../database/interfaces/user.interface';
 import {IssuedDocument} from '../../database/interfaces/issued-document.interface';
 
@@ -14,7 +14,7 @@ export class IssuedDocsService {
     }
 
     public getUserIssuedDocs(user: Partial<User>): Promise<[Partial<IssuedDocument>[], number]> {
-        const where: Prisma.IssuedDocumentWhereInput = {requesterId: user.id};
+        const where: Prisma.IssuedDocumentWhereInput = user.role === 'USER' ? {requesterId: user.id} : {};
 
         return Promise.all([
             this.prismaService.issuedDocument.findMany({
@@ -31,37 +31,12 @@ export class IssuedDocsService {
         ]);
     }
 
-    public async getUserIssuedDoc(
-        registrator: Pick<User, 'id'>,
-        userId: string,
+    public async getIssuedDoc(
         serialCode: number,
-    ):
-    Promise<Partial<IssuedDocument>> {
-        const {role: isRegister} = await this.prismaService.user.findUnique({
-            where: {id: registrator.id},
-            select: {
-                id: true,
-                role: true,
-            },
-        });
-        if (isRegister !== Role.REGISTER) {
-            throw new UnauthorizedException();
-        }
-
-        // this.prismaService.user.findUnique({
-        //     where: {id: userId},
-        //     include: {
-        //         passportData: true,
-        //         userDocuments: true,
-        //     },
-        // });
-
-        return this.prismaService.issuedDocument.findFirst({
+    ): Promise<Partial<IssuedDocument>> {
+        return this.prismaService.issuedDocument.findUnique({
             include: {requester: {include: {userDocuments: true, passportData: true}}},
-            where: {
-                serialCode,
-                requester: {id: userId},
-            },
+            where: {serialCode},
         });
     }
 
