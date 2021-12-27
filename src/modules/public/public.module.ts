@@ -10,6 +10,7 @@ import {VerificationController} from './controllers/verification.controller';
 import {IssuedDocsService} from './services/issued-docs.service';
 import {VerificationService} from './services/verification.service';
 import {SharedModule} from '../shared/shared.module';
+import {ActionLogsController} from './controllers/action-logs.controller';
 
 @Module({
     imports: [
@@ -33,6 +34,7 @@ import {SharedModule} from '../shared/shared.module';
         IssuedDocsController,
         VerificationController,
         UserController,
+        ActionLogsController,
     ],
 })
 export class PublicModule {}

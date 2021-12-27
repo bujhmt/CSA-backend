@@ -3,7 +3,7 @@ import {
 } from '@nestjs/common';
 import {RequestValidationFilter} from 'src/filters/request-validation.filter';
 import {AuthorizedRequest} from 'src/interfaces/authorized-request.interface';
-import {CreateUserDTO} from './dto/create-user.dto';
+import {CreateUserDTO} from './dto/users/create-user.dto';
 import {LocalAuthGuard} from './guards/local-auth.guard';
 import {DoesUserExist} from './guards/user-exist.guard';
 import {CreateUserToken} from './interfaces/create-user-token.interface';

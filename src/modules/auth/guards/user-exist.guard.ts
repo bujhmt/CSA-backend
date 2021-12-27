@@ -4,7 +4,7 @@ import {
 import {validate} from 'class-validator';
 import {Observable} from 'rxjs';
 import {UsersService} from 'src/modules/shared/services/users.service';
-import {CreateUserDTO} from '../dto/create-user.dto';
+import {CreateUserDTO} from '../dto/users/create-user.dto';
 
 @Injectable()
 export class DoesUserExist implements CanActivate {
