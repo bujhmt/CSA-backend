@@ -42,8 +42,8 @@ export class ActionLogsService {
             user: {
                 ...(name ? {
                     OR: [
-                        {name: {contains: name}},
-                        {login: {contains: name}},
+                        {name: {contains: name, mode: 'insensitive'}},
+                        {login: {contains: name, mode: 'insensitive'}},
                     ],
                 } : {}),
                 role,
