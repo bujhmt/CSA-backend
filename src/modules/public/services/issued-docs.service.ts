@@ -30,8 +30,9 @@ export class IssuedDocsService {
     }
 
     public getUserIssuedDocs(user: Partial<User>): Promise<[Partial<IssuedDocument>[], number]> {
-        const where: Prisma.IssuedDocumentWhereInput = user.role === 'USER' ? {requesterId: user.id} : {};
-
+        const where: Prisma.IssuedDocumentWhereInput = user.role === 'USER'
+            ? {requesterId: user.id}
+            : {status: 'RECEIVED'};
         return Promise.all([
             this.prismaService.issuedDocument.findMany({
                 select: {
@@ -40,6 +41,8 @@ export class IssuedDocsService {
                     requestDate: true,
                     processedDate: true,
                     status: true,
+                    processedResult: true,
+                    comment: true,
                 },
                 where,
             }),
@@ -116,6 +119,7 @@ export class IssuedDocsService {
         registrator: Pick<User, 'id'>,
         serialCode: number,
         status: IssuedDocStatus,
+        comment?: string,
     ) {
         const isRegister = await this.prismaService.user.findUnique({
             where: {id: registrator.id},
@@ -130,11 +134,11 @@ export class IssuedDocsService {
         }
         return this.prismaService.issuedDocument.update({
             where: {serialCode},
-            data: {status},
+            data: {status, comment},
         });
     }
 
     public generateReceipt() {
-        return fs.createReadStream('./mock.pdf');
+        return fs.createReadStream('D:\\repos\\PE\\CSA-backend\\src\\modules\\public\\mock\\mock.pdf');
     }
 }

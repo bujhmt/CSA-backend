@@ -112,6 +112,7 @@ model IssuedDocument {
   processedDate         DateTime?
   serialCode            Int             @unique
   processedResult       String?
+  comment               String?
 }
 
 model ActionLog {
