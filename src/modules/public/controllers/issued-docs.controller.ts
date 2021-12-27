@@ -1,5 +1,5 @@
 import {
-    Controller, Get, Logger, UseGuards, Request, UseInterceptors, Post, Body, Query, UploadedFile,
+    Controller, Get, Logger, UseGuards, Request, UseInterceptors, Post, Body, Query, UploadedFile, Res,
 } from '@nestjs/common';
 import {JwtAuthGuard} from 'src/modules/auth/guards/jwt-auth.guard';
 import {format} from 'date-fns';
@@ -115,17 +115,21 @@ export class IssuedDocsController {
     )
     async updateStatusDoc(
         @Query('serialCode') serialCode: number,
-        @Body() {status}: {status: IssuedDocStatus},
+        @Body() {status, comment}: {status: IssuedDocStatus, comment?: string},
         @Request() {user}: AuthorizedRequest,
     ):
         Promise<Answer<Partial<IssuedDocument>>> {
         try {
-            const data = await this.issuedDocsService.setDocStatus(user, serialCode, status);
-            console.log(data);
+            const data = await this.issuedDocsService.setDocStatus(user, serialCode, status, comment);
             return {success: true, data};
         } catch (err) {
             this.logger.error(err.message);
             return {success: false};
         }
+    }
+
+    @Get('/receipt')
+    async generateReceipt(@Res() res) {
+        this.issuedDocsService.generateReceipt().pipe(res);
     }
 }
