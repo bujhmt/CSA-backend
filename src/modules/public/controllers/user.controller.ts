@@ -1,5 +1,15 @@
 import {
-    Controller, Get, Logger, UseGuards, Request, UseInterceptors, Post, Body, UploadedFiles, UnauthorizedException,
+    Controller,
+    Get,
+    Logger,
+    UseGuards,
+    Request,
+    UseInterceptors,
+    Post,
+    Body,
+    UploadedFiles,
+    UnauthorizedException,
+    UseFilters,
 } from '@nestjs/common';
 import {JwtAuthGuard} from 'src/modules/auth/guards/jwt-auth.guard';
 import {UsersService} from 'src/modules/shared/services/users.service';
@@ -9,6 +19,8 @@ import {Role} from '@prisma/client';
 import {AuthorizedRequest} from '../../../interfaces/authorized-request.interface';
 import {User} from '.prisma/client';
 import {ActionLogsService} from '../../shared/services/action-logs.service';
+import {ChangeStatusDto} from '../dto/users/change-status.dto';
+import {RequestValidationFilter} from '../../../filters/request-validation.filter';
 
 @Controller('/user')
 @UseGuards(JwtAuthGuard)
@@ -120,9 +132,10 @@ export class UserController {
     }
 
     @Post('/deactivate')
+    @UseFilters(RequestValidationFilter)
     async deactivateUser(
         @Request() {user}: AuthorizedRequest,
-        @Body() {login}: { login: string },
+        @Body() {login, reason}: ChangeStatusDto,
     ): Promise<Answer<Partial<User>>> {
         const isAdmin = await this.userService.getUserById(user.id);
 
@@ -135,12 +148,45 @@ export class UserController {
 
             await this.actionLogsService.makeLog({
                 userId: user.id,
-                type: 'Деактивавція користувача',
+                type: 'Деактивація користувача',
                 newSnapshot: data,
                 oldSnapshot: {
                     ...data,
                     isActive: true,
                 },
+                reason,
+            });
+
+            return {success: true, data};
+        } catch {
+            return {success: false};
+        }
+    }
+
+    @Post('/activate')
+    @UseFilters(RequestValidationFilter)
+    async activateUser(
+        @Request() {user}: AuthorizedRequest,
+        @Body() {login, reason}: ChangeStatusDto,
+    ): Promise<Answer<Partial<User>>> {
+        const isAdmin = await this.userService.getUserById(user.id);
+
+        if (isAdmin.role !== Role.ADMIN || !isAdmin.isActive) {
+            throw new UnauthorizedException();
+        }
+
+        try {
+            const data = await this.userService.activateUser(user, login);
+
+            await this.actionLogsService.makeLog({
+                userId: user.id,
+                type: 'Активація користувача',
+                newSnapshot: data,
+                oldSnapshot: {
+                    ...data,
+                    isActive: false,
+                },
+                reason,
             });
 
             return {success: true, data};

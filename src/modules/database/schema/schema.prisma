@@ -125,4 +125,5 @@ model ActionLog {
   date             DateTime        @default(now())
   newSnapshot      Json?           @default("{}")
   oldSnapshot      Json?           @default("{}")
+  reason           String?
 }
