@@ -90,7 +90,7 @@ export class IssuedDocsController {
             const data = await this.issuedDocsService.addIssuedDocsResponse(user, serialCode, file);
 
             await this.actionLogsService.makeLog({
-                type: '???',
+                type: 'Додавання реєстратором документа у відповідь на запит',
                 userId: user.id,
                 newSnapshot: data,
             });
