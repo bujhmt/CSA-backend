@@ -2,8 +2,6 @@ import {IsEnum, IsOptional, IsString} from 'class-validator';
 import {PaginationDto} from '../../../../dto/pagination.dto';
 import {Role} from '.prisma/client';
 
-const defaults = {role: Role.USER};
-
 export class GetActionLogsDto extends PaginationDto {
     @IsString()
     @IsOptional()
@@ -11,7 +9,7 @@ export class GetActionLogsDto extends PaginationDto {
 
     @IsEnum(Role)
     @IsOptional()
-        role?: Role = defaults.role;
+        role?: Role;
 
     @IsString()
     @IsOptional()
