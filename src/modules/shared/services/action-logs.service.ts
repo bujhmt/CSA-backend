@@ -28,7 +28,7 @@ export class ActionLogsService {
                 newSnapshot,
                 oldSnapshot,
                 user: {connect: {id: userId}},
-                civilStatusAct: {connect: {id: civilStatusActId}},
+                ...(civilStatusActId ? {civilStatusAct: {connect: {id: civilStatusActId}}} : {}),
             },
         });
     }

@@ -35,7 +35,7 @@ export class AuthService {
         return userData;
     }
 
-    public login(user: User): Promise<string> {
+    public login(user: Partial<User>): Promise<string> {
         return this.generateToken(user);
     }
 
