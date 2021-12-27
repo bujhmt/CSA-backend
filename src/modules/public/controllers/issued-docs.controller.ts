@@ -1,17 +1,19 @@
 import {
-    Controller, Get, Logger, UseGuards, Request, UseInterceptors, Post, Body, Query, UploadedFile, Res,
+    Body, Controller, Get, Logger, Post, Query, Request, Res, UploadedFile, UseGuards, UseInterceptors,
 } from '@nestjs/common';
-import {JwtAuthGuard} from 'src/modules/auth/guards/jwt-auth.guard';
-import {format} from 'date-fns';
 import {FileInterceptor} from '@nestjs/platform-express';
-import {IssuedDocsService} from '../services/issued-docs.service';
-import {AuthorizedRequest} from '../../../interfaces/authorized-request.interface';
-import {Answer} from '../../../interfaces/answer.interface';
-import {IssuedDocument} from '../../database/interfaces/issued-document.interface';
+import {format} from 'date-fns';
+import {JwtAuthGuard} from 'src/modules/auth/guards/jwt-auth.guard';
 import {FieldTransformInterceptor} from '../../../interceptors/field-transform.interceptor';
-import {FileExtender} from '../interceptors/file-extender.interceptor';
-import {IssuedDocStatus} from '.prisma/client';
+import {Answer} from '../../../interfaces/answer.interface';
+import {AuthorizedRequest} from '../../../interfaces/authorized-request.interface';
+import {IssuedDocument} from '../../database/interfaces/issued-document.interface';
 import {ActionLogsService} from '../../shared/services/action-logs.service';
+import {AddDocRequestDTO} from '../dto/issued-docs/add-doc-request.dto';
+import {AddDocResponseDTO} from '../dto/issued-docs/add-doc-response.dto';
+import {UpdateStatusDTO} from '../dto/issued-docs/update-status.dto';
+import {FileExtender} from '../interceptors/file-extender.interceptor';
+import {IssuedDocsService} from '../services/issued-docs.service';
 
 @Controller('/issued-docs')
 @UseGuards(JwtAuthGuard)
@@ -58,7 +60,7 @@ export class IssuedDocsController {
     )
     async addIssuedDocsRequest(
         @Request() {user}: AuthorizedRequest,
-        @Body() {type}: {type: string},
+        @Body() {type}: AddDocRequestDTO,
     ): Promise<Answer<Partial<IssuedDocument>>> {
         try {
             const data = await this.issuedDocsService.addIssuedDocsRequest(user, type);
@@ -83,7 +85,7 @@ export class IssuedDocsController {
     )
     async addIssuedDocsResponse(
         @Request() {user}: AuthorizedRequest,
-        @Body() {serialCode} : {serialCode: number},
+        @Body() {serialCode} : AddDocResponseDTO,
         @UploadedFile() file: Express.Multer.File,
     ): Promise<Answer<Partial<IssuedDocument>>> {
         try {
@@ -139,7 +141,7 @@ export class IssuedDocsController {
     )
     async updateStatusDoc(
         @Query('serialCode') serialCode: number,
-        @Body() {status, comment}: {status: IssuedDocStatus, comment?: string},
+        @Body() {status, comment}: UpdateStatusDTO,
         @Request() {user}: AuthorizedRequest,
     ):
         Promise<Answer<Partial<IssuedDocument>>> {
