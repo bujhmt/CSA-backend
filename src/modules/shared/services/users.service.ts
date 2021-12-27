@@ -59,9 +59,6 @@ export class UsersService {
             where: {id: user.id},
             select: {id: true, isActive: true},
         });
-        if (!isUser || !isUser.isActive) {
-            throw new UnauthorizedException();
-        }
 
         await Promise.all(files.map((file) => this.prismaService.userDocument.create({
             data: {
@@ -82,11 +79,8 @@ export class UsersService {
             where: {id: user.id},
             include: {passportData: true},
         });
-        if (!isUser || !isUser.isActive) {
-            throw new UnauthorizedException();
-        }
 
-        const updatedUser = await this.prismaService.user.update({
+        return this.prismaService.user.update({
             where: {id: user.id},
             data: {
                 name: addInfoData.name,
@@ -95,33 +89,27 @@ export class UsersService {
                         document: addInfoData.document,
                         record: addInfoData.record,
                         taxpayerIdentificationNumber: addInfoData.taxpayerIdentificationNumber,
-                        // issuingAuthorityId: parseInt(addInfoData.issuingAuthority, 10),
                     },
                 } : {
                     create: {
                         document: addInfoData.document,
                         record: addInfoData.record,
                         taxpayerIdentificationNumber: addInfoData.taxpayerIdentificationNumber,
-                        // issuingAuthorityId: parseInt(addInfoData.issuingAuthority, 10),
                     },
                 },
             },
             select: {id: true},
         });
-        return updatedUser;
     }
 
     async getInfo(registrator: Pick<User, 'id'>, userId: string): Promise<Partial<User> & {
         passportData: Partial<PassportData>;
     }> {
-        const isRegister = await this.getUserById(registrator.id);
-        if (isRegister.role !== Role.REGISTER || !isRegister.isActive) {
-            throw new UnauthorizedException();
-        }
         const userData = await this.prismaService.user.findUnique({
             where: {id: userId},
             include: {passportData: true},
         });
+
         return {
             name: userData.name,
             passportData: {
@@ -134,10 +122,6 @@ export class UsersService {
     }
 
     async getFiles(registrator: Pick<User, 'id'>, userId: string): Promise<string[]> {
-        const isRegister = await this.getUserById(registrator.id);
-        if (isRegister.role !== Role.REGISTER || !isRegister.isActive) {
-            throw new UnauthorizedException();
-        }
         const {userDocuments: docs} = await this.prismaService.user.findUnique({
             where: {id: userId},
             include: {userDocuments: true},
@@ -145,15 +129,10 @@ export class UsersService {
         return docs.map((doc) => doc.document);
     }
 
-    async deactivateUser(admin: Pick<User, 'id'>, login: string): Promise<Partial<User>> {
-        const isAdmin = await this.getUserById(admin.id);
-        if (isAdmin.role !== Role.ADMIN || !isAdmin.isActive) {
-            throw new UnauthorizedException();
-        }
-        const deactivatedUser = await this.prismaService.user.update({
+    deactivateUser(admin: Pick<User, 'id'>, login: string): Promise<Partial<User>> {
+        return this.prismaService.user.update({
             where: {login},
             data: {isActive: false},
         });
-        return deactivatedUser;
     }
 }

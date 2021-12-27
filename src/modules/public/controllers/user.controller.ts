@@ -1,15 +1,14 @@
 import {
-    Controller, Get, Logger, UseGuards, Request, UseInterceptors, Post, Body, UploadedFiles, Put,
+    Controller, Get, Logger, UseGuards, Request, UseInterceptors, Post, Body, UploadedFiles, UnauthorizedException,
 } from '@nestjs/common';
 import {JwtAuthGuard} from 'src/modules/auth/guards/jwt-auth.guard';
-import {format} from 'date-fns';
 import {UsersService} from 'src/modules/shared/services/users.service';
 import {FilesInterceptor} from '@nestjs/platform-express';
+import {Answer} from 'src/interfaces/answer.interface';
+import {Role} from '@prisma/client';
 import {AuthorizedRequest} from '../../../interfaces/authorized-request.interface';
-import {FieldTransformInterceptor} from '../../../interceptors/field-transform.interceptor';
-import {AddInfoDTO} from '../dto/add-info.dto';
 import {User} from '.prisma/client';
-import { Answer } from 'src/interfaces/answer.interface';
+import {ActionLogsService} from '../../shared/services/action-logs.service';
 
 @Controller('/user')
 @UseGuards(JwtAuthGuard)
@@ -18,6 +17,7 @@ export class UserController {
 
     constructor(
         private readonly userService: UsersService,
+        private readonly actionLogsService: ActionLogsService,
     ) {
     }
 
@@ -29,44 +29,121 @@ export class UserController {
         @Request() {user}: AuthorizedRequest,
         @Body() addInfoData,
         @UploadedFiles() files: Array<Express.Multer.File>,
-    ):
-    Promise<Partial<User>> {
-        return this.userService.addFiles(user, files);
+    ): Promise<Answer<Partial<User>>> {
+        try {
+            const data = await this.userService.addFiles(user, files);
+
+            await this.actionLogsService.makeLog({
+                userId: user.id,
+                newSnapshot: data,
+                type: 'Додання документів користувачем',
+            });
+
+            return {success: true, data};
+        } catch (err) {
+            this.logger.error(err);
+            return {success: false};
+        }
     }
 
     @Post('/addDocs/info')
     async addInfo(
         @Request() {user}: AuthorizedRequest,
         @Body() addInfoData,
-    ):
-    Promise<Partial<User>> {
-        return this.userService.addInfo(user, addInfoData);
+    ): Promise<Answer<Partial<User>>> {
+        try {
+            const data = await this.userService.addInfo(user, addInfoData);
+
+            await this.actionLogsService.makeLog({
+                userId: user.id,
+                newSnapshot: data,
+                type: 'Оновлення даних користувача',
+            });
+
+            return {success: true, data};
+        } catch (err) {
+            this.logger.error(err);
+            return {success: false};
+        }
     }
 
     @Get('/getInfo')
     async getInfo(
         @Request() {user}: AuthorizedRequest,
-        @Body() {userId}: {userId: string},
-    ):
-    Promise<Partial<User>> {
-        return this.userService.getInfo(user, userId);
+        @Body() {userId}: { userId: string },
+    ): Promise<Answer<Partial<User>>> {
+        const isRegister = await this.userService.getUserById(user.id);
+
+        if (isRegister.role !== Role.REGISTER || !isRegister.isActive) {
+            throw new UnauthorizedException();
+        }
+
+        try {
+            const data = await this.userService.getInfo(user, userId);
+
+            await this.actionLogsService.makeLog({
+                userId: user.id,
+                type: 'Отримання даних користувача',
+            });
+
+            return {success: true, data};
+        } catch (err) {
+            this.logger.error(err);
+            return {success: false};
+        }
     }
 
     @Get('/getFiles')
-    getFiles(
+    async getFiles(
         @Request() {user}: AuthorizedRequest,
-        @Body() {userId}: {userId: string},
-    ): Promise<string[]> {
-        return this.userService.getFiles(user, userId);
+        @Body() {userId}: { userId: string },
+    ): Promise<Answer<string[]>> {
+        const isRegister = await this.userService.getUserById(user.id);
+
+        if (isRegister.role !== Role.REGISTER || !isRegister.isActive) {
+            throw new UnauthorizedException();
+        }
+
+        try {
+            const data = await this.userService.getFiles(user, userId);
+
+            await this.actionLogsService.makeLog({
+                userId: user.id,
+                type: 'Отримання документів користувача',
+            });
+
+            return {success: true, data};
+        } catch (err) {
+            this.logger.error(err);
+            return {success: false};
+        }
     }
 
     @Post('/deactivate')
     async deactivateUser(
         @Request() {user}: AuthorizedRequest,
-        @Body() {login}: {login: string},
+        @Body() {login}: { login: string },
     ): Promise<Answer<Partial<User>>> {
+        const isAdmin = await this.userService.getUserById(user.id);
+
+        if (isAdmin.role !== Role.ADMIN || !isAdmin.isActive) {
+            throw new UnauthorizedException();
+        }
+
         try {
-            return {success: true, data: await this.userService.deactivateUser(user, login)};
+            const data = await this.userService.deactivateUser(user, login);
+
+            await this.actionLogsService.makeLog({
+                userId: user.id,
+                type: 'Деактивавція користувача',
+                newSnapshot: data,
+                oldSnapshot: {
+                    ...data,
+                    isActive: true,
+                },
+            });
+
+            return {success: true, data};
         } catch {
             return {success: false};
         }

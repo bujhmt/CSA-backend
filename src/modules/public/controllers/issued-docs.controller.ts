@@ -11,6 +11,7 @@ import {IssuedDocument} from '../../database/interfaces/issued-document.interfac
 import {FieldTransformInterceptor} from '../../../interceptors/field-transform.interceptor';
 import {FileExtender} from '../interceptors/file-extender.interceptor';
 import {IssuedDocStatus} from '.prisma/client';
+import {ActionLogsService} from '../../shared/services/action-logs.service';
 
 @Controller('/issued-docs')
 @UseGuards(JwtAuthGuard)
@@ -19,6 +20,7 @@ export class IssuedDocsController {
 
     constructor(
         private readonly issuedDocsService: IssuedDocsService,
+        private readonly actionLogsService: ActionLogsService,
     ) {
     }
 
@@ -33,6 +35,12 @@ export class IssuedDocsController {
     async getIssuedDocs(@Request() {user}: AuthorizedRequest): Promise<Answer<Partial<IssuedDocument>[]>> {
         try {
             const [data, total] = await this.issuedDocsService.getUserIssuedDocs(user);
+
+            await this.actionLogsService.makeLog({
+                type: 'Отримання запитів користувачем',
+                userId: user.id,
+            });
+
             return {success: true, data, total};
         } catch (err) {
             this.logger.error(err.message);
@@ -55,6 +63,12 @@ export class IssuedDocsController {
         try {
             const data = await this.issuedDocsService.addIssuedDocsRequest(user, type);
 
+            await this.actionLogsService.makeLog({
+                type: 'Створення запиту користувачем',
+                userId: user.id,
+                newSnapshot: data,
+            });
+
             return {success: true, data};
         } catch (err) {
             this.logger.error(err.message);
@@ -75,6 +89,12 @@ export class IssuedDocsController {
         try {
             const data = await this.issuedDocsService.addIssuedDocsResponse(user, serialCode, file);
 
+            await this.actionLogsService.makeLog({
+                type: '???',
+                userId: user.id,
+                newSnapshot: data,
+            });
+
             return {success: true, data};
         } catch (err) {
             this.logger.error(err.message);
@@ -93,10 +113,14 @@ export class IssuedDocsController {
     async getUserIssuedDoc(
         @Query('serialCode') serialCode: number,
         @Request() {user}: AuthorizedRequest,
-    ):
-        Promise<Answer<Partial<IssuedDocument>>> {
+    ): Promise<Answer<Partial<IssuedDocument>>> {
         try {
             const data = await this.issuedDocsService.getUserIssuedDoc(user, serialCode);
+
+            await this.actionLogsService.makeLog({
+                type: 'Отримання документів користувача реєстратором',
+                userId: user.id,
+            });
 
             return {success: true, data};
         } catch (err) {
@@ -120,7 +144,16 @@ export class IssuedDocsController {
     ):
         Promise<Answer<Partial<IssuedDocument>>> {
         try {
+            const oldData = await this.issuedDocsService.getBySerialCode(serialCode);
             const data = await this.issuedDocsService.setDocStatus(user, serialCode, status, comment);
+
+            await this.actionLogsService.makeLog({
+                type: 'Зміна статусу документа реєстратором',
+                userId: user.id,
+                newSnapshot: data,
+                oldSnapshot: oldData,
+            });
+
             return {success: true, data};
         } catch (err) {
             this.logger.error(err.message);
