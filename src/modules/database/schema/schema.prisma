@@ -21,23 +21,6 @@ enum IssuedDocStatus {
   PROCESSED
 }
 
-enum LogAction {
-  CIVIL_ACT_UPDATE
-  CIVIL_ACT_ACTIVATE
-  CIVIL_ACT_DEACTIVATE
-  REQUEST_EXTRACT
-  REQUEST_CERTIFICATE
-  ISSUE_EXTRACT
-  ISSUE_CERTIFICATE
-  LOG_IN
-  LOG_OUT
-}
-
-enum ActionStatus {
-  SUCCESS
-  FAIL
-}
-
 model User {
   id                 String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   organization       Organization?     @relation(fields: [organizationId], references: [id])
@@ -137,9 +120,8 @@ model ActionLog {
   userId           String          @db.Uuid
   civilStatusAct   CivilStatusAct? @relation(fields: [civilStatusActId], references: [id])
   civilStatusActId String?         @db.Uuid
-  type             LogAction
-  date             DateTime
-  actionStatus     ActionStatus
-  newSnapshot      Json?
-  oldSnapshoy      Json?
+  type             String
+  date             DateTime        @default(now())
+  newSnapshot      Json?           @default("{}")
+  oldSnapshot      Json?           @default("{}")
 }

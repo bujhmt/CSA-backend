@@ -14,6 +14,21 @@ export class IssuedDocsService {
     ) {
     }
 
+    public getBySerialCode(serialCode: number): Promise<Partial<IssuedDocument>> {
+        return this.prismaService.issuedDocument.findUnique({
+            select: {
+                status: true,
+                type: true,
+                serialCode: true,
+                register: {select: {name: true}},
+                requester: {select: {name: true}},
+                requestDate: true,
+                processedDate: true,
+            },
+            where: {serialCode},
+        });
+    }
+
     public getUserIssuedDocs(user: Partial<User>): Promise<[Partial<IssuedDocument>[], number]> {
         const where: Prisma.IssuedDocumentWhereInput = user.role === 'USER' ? {requesterId: user.id} : {};
 
@@ -45,17 +60,10 @@ export class IssuedDocsService {
                 isActive: true,
             },
         });
+
         if (isRegister.role !== Role.REGISTER || !isRegister.isActive) {
             throw new UnauthorizedException();
         }
-
-        // this.prismaService.user.findUnique({
-        //     where: {id: userId},
-        //     include: {
-        //         passportData: true,
-        //         userDocuments: true,
-        //     },
-        // });
 
         return this.prismaService.issuedDocument.findFirst({
             include: {requester: {include: {userDocuments: true, passportData: true}}},
@@ -89,9 +97,11 @@ export class IssuedDocsService {
                 isActive: true,
             },
         });
+
         if (isRegister.role !== Role.REGISTER || !isRegister.isActive) {
             throw new UnauthorizedException();
         }
+
         return (await this.prismaService.issuedDocument.updateMany({
             where: {serialCode},
             data: {
