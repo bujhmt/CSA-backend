@@ -9,7 +9,8 @@ import {Prisma} from '.prisma/client';
 export class UsersService {
     constructor(
         private readonly prismaService: PrismaService,
-    ) {}
+    ) {
+    }
 
     list({
         take, role, name, skip,
@@ -46,7 +47,7 @@ export class UsersService {
         ]);
     }
 
-    create(user: {passwordHash: string, login: string, role: Role}) {
+    create(user: { passwordHash: string, login: string, role: Role }) {
         return this.prismaService.user.create({data: {...user}});
     }
 
@@ -81,7 +82,15 @@ export class UsersService {
                 },
                 userDocuments: {select: {document: true}},
                 email: true,
-                name: true,
+                actionLog: {
+                    select: {
+                        reason: true,
+                        date: true,
+                        type: true,
+                    },
+                    orderBy: {date: 'desc'},
+                    where: {reason: {not: null}},
+                },
             },
         });
     }

@@ -16,6 +16,7 @@ import {UsersService} from 'src/modules/shared/services/users.service';
 import {FilesInterceptor} from '@nestjs/platform-express';
 import {Answer} from 'src/interfaces/answer.interface';
 import {Role} from '@prisma/client';
+import {format} from 'date-fns';
 import {AuthorizedRequest} from '../../../interfaces/authorized-request.interface';
 import {User} from '.prisma/client';
 import {ActionLogsService} from '../../shared/services/action-logs.service';
@@ -23,6 +24,7 @@ import {ChangeStatusDto} from '../dto/users/change-status.dto';
 import {RequestValidationFilter} from '../../../filters/request-validation.filter';
 import {ClearAnswerInterceptor} from '../../../interceptors/clear-answer.interceptor';
 import {GetUsersDto} from '../dto/users/get-users.dto';
+import {FieldTransformInterceptor} from '../../../interceptors/field-transform.interceptor';
 
 @Controller('/user')
 @UseGuards(JwtAuthGuard)
@@ -55,6 +57,11 @@ export class UserController {
     @UseFilters(RequestValidationFilter)
     @UseInterceptors(
         new ClearAnswerInterceptor(['passwordHash', 'id']),
+        new FieldTransformInterceptor<string | Date, string>({
+            field: 'date',
+            recursive: true,
+            handler: (date) => format(new Date(date), 'dd.MM.yyyy HH:mm'),
+        }),
     )
     public async getByLogin(@Param('login') login: string): Promise<Answer<Partial<User>>> {
         try {
@@ -180,7 +187,7 @@ export class UserController {
             const data = await this.userService.deactivateUser(user, login);
 
             await this.actionLogsService.makeLog({
-                userId: user.id,
+                userId: data.id,
                 type: 'Деактивація користувача',
                 newSnapshot: data,
                 oldSnapshot: {
@@ -212,7 +219,7 @@ export class UserController {
             const data = await this.userService.activateUser(user, login);
 
             await this.actionLogsService.makeLog({
-                userId: user.id,
+                userId: data.id,
                 type: 'Активація користувача',
                 newSnapshot: data,
                 oldSnapshot: {

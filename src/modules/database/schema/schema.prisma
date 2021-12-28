@@ -39,7 +39,7 @@ model User {
   requestedDocuments IssuedDocument[] @relation("Requested")
   issuedDocuments    IssuedDocument[] @relation("Issued")
   userDocuments      UserDocument[]
-  ActionLog          ActionLog[]
+  actionLog          ActionLog[]
   isActive           Boolean          @default(true)
 }
 
