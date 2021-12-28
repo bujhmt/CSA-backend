@@ -28,7 +28,7 @@ export class ActionLogsController {
         new FieldTransformInterceptor<string | Date, string>({
             field: 'date',
             recursive: true,
-            handler: (date) => format(new Date(date), 'dd.MM.yyyy'),
+            handler: (date) => format(new Date(date), 'dd.MM.yyyy HH:mm'),
         }),
     )
     public async list(
@@ -49,7 +49,7 @@ export class ActionLogsController {
         new ClearAnswerInterceptor(['passwordHash']),
         new FieldTransformInterceptor<string | Date, string>({
             field: 'date',
-            handler: (date) => format(new Date(date), 'dd.MM.yyyy'),
+            handler: (date) => format(new Date(date), 'dd.MM.yyyy HH:mm'),
         }),
     )
     public async getUnique(@Param('id') id: string): Promise<Answer<Partial<ActionLog>>> {
