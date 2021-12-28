@@ -12,6 +12,7 @@ import {UpdateCivilActDTO} from '../dto/civil-act/update-civil-act.dto';
 import {GetUserCivilActDTO} from '../dto/civil-act/get-user-civil-act.dto';
 import {GetCivilActDTO} from '../dto/civil-act/get-civil-act.dto';
 import {CreateCivilActDTO} from '../dto/civil-act/create-civil-act.dto';
+import { SetActiveCivilActDTO } from '../dto/civil-act/set-active-act';
 
 @Controller('/civil-act')
 @UseGuards(JwtAuthGuard)
@@ -26,10 +27,10 @@ export class CivilActController {
     @Get('/user')
     async getUserCivilActs(
         @Request() {user}: AuthorizedRequest,
-        @Query() {userId}: GetUserCivilActDTO,
+        @Query() {login}: GetUserCivilActDTO,
     ): Promise<Answer<Partial<CivilStatusAct[]>>> {
         try {
-            const [data, total] = await this.civilActService.getUserCivilActs(user, userId);
+            const [data, total] = await this.civilActService.getUserCivilActs(user, login);
 
             await this.actionLogsService.makeLog({
                 type: 'Отримання всіх актів цивільного стану користувача',
@@ -71,7 +72,62 @@ export class CivilActController {
         @Body() createActDTO: CreateCivilActDTO,
     ): Promise<Answer<CivilStatusAct>> {
         try {
+            await this.actionLogsService.makeLog({
+                type: 'Створення акту цивільного стану',
+                userId: user.id,
+                newSnapshot: {typeName: createActDTO.actType, data: createActDTO.data},
+            });
             return {success: true, data: await this.civilActService.createUserCivilAct(user, createActDTO)};
+        } catch (err) {
+            this.logger.error(err.message);
+            return {success: false};
+        }
+    }
+
+    @Post('/deactivate')
+    async deactivateUserCivilAct(
+        @Request() {user}: AuthorizedRequest,
+        @Body() {civilActId}: SetActiveCivilActDTO,
+    ): Promise<Answer<Partial<CivilStatusAct>>> {
+        try {
+            const {oldSnapshot, newSnapshot} = await this.civilActService.updateUserCivilAct(
+                user,
+                civilActId,
+                false,
+            );
+            await this.actionLogsService.makeLog({
+                type: 'Деактивація акту цивільного стану регістратором',
+                userId: user.id,
+                oldSnapshot,
+                newSnapshot,
+            });
+
+            return {success: true, data: newSnapshot};
+        } catch (err) {
+            this.logger.error(err.message);
+            return {success: false};
+        }
+    }
+
+    @Post('/activate')
+    async activateUserCivilAct(
+        @Request() {user}: AuthorizedRequest,
+        @Body() {civilActId}: SetActiveCivilActDTO,
+    ): Promise<Answer<Partial<CivilStatusAct>>> {
+        try {
+            const {oldSnapshot, newSnapshot} = await this.civilActService.updateUserCivilAct(
+                user,
+                civilActId,
+                true,
+            );
+            await this.actionLogsService.makeLog({
+                type: 'Активація акту цивільного стану регістратором',
+                userId: user.id,
+                oldSnapshot,
+                newSnapshot,
+            });
+
+            return {success: true, data: newSnapshot};
         } catch (err) {
             this.logger.error(err.message);
             return {success: false};
@@ -82,16 +138,15 @@ export class CivilActController {
     async updateUserCivilAct(
         @Request() {user}: AuthorizedRequest,
         @Body() {
-                userId, civilActId, newData, isActive,
+                civilActId, newData, isActive,
             }: UpdateCivilActDTO,
     ): Promise<Answer<Partial<CivilStatusAct>>> {
         try {
             const {oldSnapshot, newSnapshot} = await this.civilActService.updateUserCivilAct(
                 user,
-                userId,
                 civilActId,
-                newData,
                 isActive,
+                newData,
             );
             const type = isActive
                 ? 'Зміна акту цивільного стану регістратором'

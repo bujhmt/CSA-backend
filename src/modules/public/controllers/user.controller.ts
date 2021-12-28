@@ -242,7 +242,7 @@ export class UserController {
     public async getByLogin(@Param('login') login: string): Promise<Answer<Partial<User>>> {
         try {
             const data = await this.userService.getUserByLogin(login);
-
+            console.log(data);
             return {success: true, data};
         } catch (err) {
             this.logger.error(err);

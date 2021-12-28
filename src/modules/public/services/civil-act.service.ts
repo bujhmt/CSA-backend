@@ -12,7 +12,7 @@ export class CivilActService {
     ) {
     }
 
-    async getUserCivilActs(registrator: Pick<User, 'id'>, userId: string): Promise<[CivilStatusAct[], number]> {
+    async getUserCivilActs(registrator: Pick<User, 'id'>, login: string): Promise<[CivilStatusAct[], number]> {
         const isRegister = await this.prismaService.user.findUnique({
             where: {id: registrator.id},
             select: {
@@ -25,6 +25,7 @@ export class CivilActService {
         if (isRegister.role !== Role.REGISTER || !isRegister.isActive) {
             throw new UnauthorizedException();
         }
+        const {id: userId} = await this.prismaService.user.findUnique({where: {login}, select: {id: true}});
         const where: Prisma.CivilStatusActWhereInput = {passportData: {owner: {id: userId}}};
 
         return Promise.all([
@@ -50,7 +51,10 @@ export class CivilActService {
             throw new UnauthorizedException();
         }
 
-        return this.prismaService.civilStatusAct.findUnique({where: {id: actId}});
+        return this.prismaService.civilStatusAct.findUnique({
+            where: {id: actId},
+            include: {actType: true},
+        });
     }
 
     async marriageCivilAct({actType, data}: CreateCivilActDTO): Promise<CivilStatusAct> {
@@ -85,7 +89,7 @@ export class CivilActService {
 
     async createUserCivilAct(
         registrator: Pick<User, 'id'>,
-        {actType, userId, data}: CreateCivilActDTO,
+        {actType, login, data}: CreateCivilActDTO,
     ):
         Promise<CivilStatusAct> {
         const isRegister = await this.prismaService.user.findUnique({
@@ -101,13 +105,13 @@ export class CivilActService {
             throw new UnauthorizedException();
         }
         const user = await this.prismaService.user.findUnique({
-            where: {id: userId},
+            where: {login},
             select: {passportData: true, name: true},
         });
         switch (actType) {
         case 'nameChange':
             await this.prismaService.user.update({
-                where: {id: userId},
+                where: {login},
                 data: {name: data.newName},
             });
             return this.prismaService.civilStatusAct.create({
@@ -123,7 +127,7 @@ export class CivilActService {
                 include: {actType: true},
             });
         case 'marriage':
-            return this.marriageCivilAct({actType, userId, data});
+            return this.marriageCivilAct({actType, login, data});
         default:
             return this.prismaService.civilStatusAct.create({
                 data: {
@@ -137,12 +141,33 @@ export class CivilActService {
         }
     }
 
+    async revertNameBack(
+        civilActId: string,
+        isActive: boolean,
+    ) {
+        const act = await this.prismaService.civilStatusAct.findUnique({
+            where: {id: civilActId},
+            select: {
+                data: true,
+                passportData: {include: {owner: true}},
+            },
+        });
+
+        await this.prismaService.user.update({
+            where: {id: act.passportData.owner.id},
+            data: {
+                name: isActive
+                    ? (act.data as Prisma.JsonObject).newName as string
+                    : (act.data as Prisma.JsonObject).oldName as string,
+            },
+        });
+    }
+
     async updateUserCivilAct(
         registrator: Pick<User, 'id'>,
-        userId: string,
         civilActId: string,
-        newData: Record<string, string>,
         isActive: boolean,
+        newData?: Record<string, string>,
     ) {
         const isRegister = await this.prismaService.user.findUnique({
             where: {id: registrator.id},
@@ -158,12 +183,16 @@ export class CivilActService {
         }
 
         const [oldSnapshot, newSnapshot] = await Promise.all([
-            this.prismaService.civilStatusAct.findUnique({where: {id: civilActId}}),
+            this.prismaService.civilStatusAct.findUnique({where: {id: civilActId}, include: {actType: true}}),
             this.prismaService.civilStatusAct.update({
                 where: {id: civilActId},
                 data: {data: newData, isActive},
             }),
         ]);
+
+        if (oldSnapshot.actType.typeName === 'nameChange') {
+            this.revertNameBack(civilActId, isActive);
+        }
 
         return {
             oldSnapshot,

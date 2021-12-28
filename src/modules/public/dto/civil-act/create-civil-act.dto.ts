@@ -2,7 +2,7 @@ import {IsOptional, IsString} from 'class-validator';
 
 export class CreateCivilActDTO {
     @IsString()
-        userId: string;
+        login: string;
 
     @IsOptional()
         data?: Record<string, string>;
