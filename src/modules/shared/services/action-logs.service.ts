@@ -51,7 +51,7 @@ export class ActionLogsService {
                 } : {}),
                 role,
             },
-            ...(type ? {type} : {}),
+            ...(type ? {type: {contains: type, mode: 'insensitive'}} : {}),
         };
 
         return Promise.all([

@@ -9,8 +9,7 @@ import {
     Body,
     UploadedFiles,
     UnauthorizedException,
-    UseFilters,
-    Query,
+    UseFilters, Query, Param,
 } from '@nestjs/common';
 import {JwtAuthGuard} from 'src/modules/auth/guards/jwt-auth.guard';
 import {UsersService} from 'src/modules/shared/services/users.service';
@@ -22,7 +21,8 @@ import {User} from '.prisma/client';
 import {ActionLogsService} from '../../shared/services/action-logs.service';
 import {ChangeStatusDto} from '../dto/users/change-status.dto';
 import {RequestValidationFilter} from '../../../filters/request-validation.filter';
-import { GetUsersDTO } from '../dto/users/get-users.dto';
+import {ClearAnswerInterceptor} from '../../../interceptors/clear-answer.interceptor';
+import {GetUsersDto} from '../dto/users/get-users.dto';
 
 @Controller('/user')
 @UseGuards(JwtAuthGuard)
@@ -33,6 +33,38 @@ export class UserController {
         private readonly userService: UsersService,
         private readonly actionLogsService: ActionLogsService,
     ) {
+    }
+
+    @Get('/')
+    @UseFilters(RequestValidationFilter)
+    @UseInterceptors(
+        new ClearAnswerInterceptor(['passwordHash', 'id']),
+    )
+    public async list(@Query() getUsersDto: GetUsersDto): Promise<Answer<Partial<User>[]>> {
+        try {
+            const [data, total] = await this.userService.list(getUsersDto);
+
+            return {success: true, data, total};
+        } catch (err) {
+            this.logger.error(err);
+            return {success: false};
+        }
+    }
+
+    @Get('/:login')
+    @UseFilters(RequestValidationFilter)
+    @UseInterceptors(
+        new ClearAnswerInterceptor(['passwordHash', 'id']),
+    )
+    public async getByLogin(@Param('login') login: string): Promise<Answer<Partial<User>>> {
+        try {
+            const data = await this.userService.getUserByLogin(login);
+
+            return {success: true, data};
+        } catch (err) {
+            this.logger.error(err);
+            return {success: false};
+        }
     }
 
     @Post('/addDocs/files')
@@ -197,7 +229,7 @@ export class UserController {
     }
 
     @Get('/users')
-    async getAllUsers(@Request() {user}: AuthorizedRequest, @Query() getUsersDTO: GetUsersDTO) {
+    async getAllUsers(@Request() {user}: AuthorizedRequest, @Query() getUsersDTO: GetUsersDto) {
         const isRegistrator = await this.userService.getUserById(user.id);
         if (isRegistrator.role !== Role.REGISTER || !isRegistrator.isActive) {
             throw new UnauthorizedException();

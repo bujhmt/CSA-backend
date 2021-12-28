@@ -3,14 +3,49 @@ import {
     PassportData, Prisma, Role, User,
 } from '@prisma/client';
 import {AddInfoDTO} from 'src/modules/public/dto/add-info.dto';
-import {GetUsersDTO} from 'src/modules/public/dto/users/get-users.dto';
 import {PrismaService} from '../../database/services/prisma.service';
+import {GetUsersDto} from '../../public/dto/users/get-users.dto';
 
 @Injectable()
 export class UsersService {
     constructor(
         private readonly prismaService: PrismaService,
     ) {}
+
+    list({
+        take, role, name, skip,
+    }: GetUsersDto): Promise<[Partial<User>[], number]> {
+        const where: Prisma.UserWhereInput = {
+            ...(name ? {
+                OR: [
+                    {name: {contains: name, mode: 'insensitive'}},
+                    {login: {contains: name, mode: 'insensitive'}},
+                ],
+            } : {}),
+            role: {
+                equals: role,
+                not: Role.ADMIN,
+            },
+        };
+
+        return Promise.all([
+            this.prismaService.user.findMany({
+                where,
+                select: {
+                    name: true,
+                    login: true,
+                    role: true,
+                    isActive: true,
+                    issuedDocuments: {select: {type: true}},
+                    passportData: true,
+                },
+                skip,
+                take,
+                orderBy: {login: 'asc'},
+            }),
+            this.prismaService.user.count({where}),
+        ]);
+    }
 
     create(user: {passwordHash: string, login: string, role: Role}) {
         return this.prismaService.user.create({data: {...user}});
@@ -38,6 +73,15 @@ export class UsersService {
                 role: true,
                 name: true,
                 isActive: true,
+                passportData: {
+                    select: {
+                        document: true,
+                        record: true,
+                        taxpayerIdentificationNumber: true,
+                    },
+                },
+                userDocuments: {select: {document: true}},
+                email: true,
             },
         });
     }
@@ -55,7 +99,7 @@ export class UsersService {
         });
     }
 
-    getAllUsers({take, name, skip}: GetUsersDTO): Promise<[Partial<User>[], number]> {
+    getAllUsers({take, name, skip}: GetUsersDto): Promise<[Partial<User>[], number]> {
         const where: Prisma.UserWhereInput = {
             ...(name ? {
                 OR: [

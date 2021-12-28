@@ -1,8 +1,13 @@
-import {IsOptional, IsString} from 'class-validator';
-import {PaginationDto} from 'src/dto/pagination.dto';
+import {IsEnum, IsOptional, IsString} from 'class-validator';
+import {PaginationDto} from '../../../../dto/pagination.dto';
+import {Role} from '.prisma/client';
 
-export class GetUsersDTO extends PaginationDto {
+export class GetUsersDto extends PaginationDto {
     @IsString()
     @IsOptional()
-        name: string;
+        name?: string;
+
+    @IsEnum(Role)
+    @IsOptional()
+        role?: Role;
 }
