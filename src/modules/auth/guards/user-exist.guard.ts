@@ -14,6 +14,7 @@ export class DoesUserExist implements CanActivate {
         const createUser = new CreateUserDTO();
         createUser.login = req.body.login;
         createUser.password = req.body.password;
+        createUser.name = req.body.name;
         const errors = await validate(createUser);
 
         if (errors.length) {

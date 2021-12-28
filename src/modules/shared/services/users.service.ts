@@ -70,6 +70,7 @@ export class UsersService {
                 login: true,
                 passwordHash: true,
                 role: true,
+                name: true,
                 isActive: true,
                 passportData: {
                     select: {
@@ -130,7 +131,6 @@ export class UsersService {
         return this.prismaService.user.update({
             where: {id: user.id},
             data: {
-                name: addInfoData.name,
                 passportData: isUser.passportData ? {
                     update: {
                         document: addInfoData.document,

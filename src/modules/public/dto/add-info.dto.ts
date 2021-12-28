@@ -3,10 +3,10 @@ import {
 } from 'class-validator';
 
 export class AddInfoDTO {
-    @IsString()
-    @MinLength(5)
-    @MaxLength(100)
-        name: string;
+    // @IsString()
+    // @MinLength(5)
+    // @MaxLength(100)
+    //     name: string;
 
     @IsString()
     @Length(14)

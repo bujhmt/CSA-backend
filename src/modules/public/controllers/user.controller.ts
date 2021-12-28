@@ -73,7 +73,6 @@ export class UserController {
     )
     async addDocs(
         @Request() {user}: AuthorizedRequest,
-        @Body() addInfoData,
         @UploadedFiles() files: Array<Express.Multer.File>,
     ): Promise<Answer<Partial<User>>> {
         try {
