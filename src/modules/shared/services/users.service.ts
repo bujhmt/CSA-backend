@@ -1,4 +1,4 @@
-import {Injectable, UnauthorizedException} from '@nestjs/common';
+import {Injectable} from '@nestjs/common';
 import {PassportData, Role, User} from '@prisma/client';
 import {AddInfoDTO} from 'src/modules/public/dto/add-info.dto';
 import {PrismaService} from '../../database/services/prisma.service';
@@ -133,6 +133,13 @@ export class UsersService {
         return this.prismaService.user.update({
             where: {login},
             data: {isActive: false},
+        });
+    }
+
+    activateUser(admin: Pick<User, 'id'>, login: string): Promise<Partial<User>> {
+        return this.prismaService.user.update({
+            where: {login},
+            data: {isActive: true},
         });
     }
 }

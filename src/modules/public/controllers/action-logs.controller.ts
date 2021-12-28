@@ -1,5 +1,5 @@
 import {
-    Controller, Get, Logger, Query, UseFilters, UseGuards, UseInterceptors,
+    Controller, Get, Logger, Param, Query, UseFilters, UseGuards, UseInterceptors,
 } from '@nestjs/common';
 import {format} from 'date-fns';
 import {JwtAuthGuard} from '../../auth/guards/jwt-auth.guard';
@@ -9,6 +9,7 @@ import {ActionLog} from '../../database/interfaces/action-log.interface';
 import {GetActionLogsDto} from '../dto/action-logs/get-action-logs.dto';
 import {FieldTransformInterceptor} from '../../../interceptors/field-transform.interceptor';
 import {RequestValidationFilter} from '../../../filters/request-validation.filter';
+import {ClearAnswerInterceptor} from '../../../interceptors/clear-answer.interceptor';
 
 @Controller('/logs')
 @UseGuards(JwtAuthGuard)
@@ -23,13 +24,16 @@ export class ActionLogsController {
     @Get('/')
     @UseFilters(RequestValidationFilter)
     @UseInterceptors(
+        new ClearAnswerInterceptor(['passwordHash']),
         new FieldTransformInterceptor<string | Date, string>({
             field: 'date',
             recursive: true,
             handler: (date) => format(new Date(date), 'dd.MM.yyyy'),
         }),
     )
-    public async list(@Query() getActionLogsDto: GetActionLogsDto): Promise<Answer<Partial<ActionLog>[]>> {
+    public async list(
+        @Query() getActionLogsDto: GetActionLogsDto,
+    ): Promise<Answer<Partial<ActionLog>[]>> {
         try {
             const [data, total] = await this.actionLogsService.list(getActionLogsDto);
 
@@ -42,12 +46,13 @@ export class ActionLogsController {
 
     @Get('/:id')
     @UseInterceptors(
+        new ClearAnswerInterceptor(['passwordHash']),
         new FieldTransformInterceptor<string | Date, string>({
             field: 'date',
             handler: (date) => format(new Date(date), 'dd.MM.yyyy'),
         }),
     )
-    public async getUnique(@Query('id') id: string): Promise<Answer<Partial<ActionLog>>> {
+    public async getUnique(@Param('id') id: string): Promise<Answer<Partial<ActionLog>>> {
         try {
             const data = await this.actionLogsService.getById(id);
 

@@ -17,12 +17,14 @@ export class ActionLogsService {
         civilStatusActId,
         oldSnapshot,
         newSnapshot,
+        reason,
     }: {
         type: string,
         userId: string,
         civilStatusActId?: string,
         oldSnapshot?: Record<string, any>,
-        newSnapshot?: Record<string, any>
+        newSnapshot?: Record<string, any>,
+        reason?: string,
     }): Promise<Partial<ActionLog>> {
         return this.prismaService.actionLog.create({
             data: {
@@ -31,6 +33,7 @@ export class ActionLogsService {
                 oldSnapshot,
                 user: {connect: {id: userId}},
                 ...(civilStatusActId ? {civilStatusAct: {connect: {id: civilStatusActId}}} : {}),
+                reason,
             },
         });
     }
@@ -61,8 +64,6 @@ export class ActionLogsService {
                             login: true,
                         },
                     },
-                    newSnapshot: true,
-                    oldSnapshot: true,
                     date: true,
                     type: true,
                     id: true,
