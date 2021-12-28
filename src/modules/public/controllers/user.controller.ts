@@ -234,4 +234,19 @@ export class UserController {
             return {success: false};
         }
     }
+
+    @Get('/users')
+    async getAllUsers(@Request() {user}: AuthorizedRequest, @Query() getUsersDTO: GetUsersDto) {
+        const isRegistrator = await this.userService.getUserById(user.id);
+        if (isRegistrator.role !== Role.REGISTER || !isRegistrator.isActive) {
+            throw new UnauthorizedException();
+        }
+        try {
+            const [data, total] = await this.userService.getAllUsers(getUsersDTO);
+            return {success: true, data, total};
+        } catch (err) {
+            this.logger.error(err);
+            return {success: false};
+        }
+    }
 }

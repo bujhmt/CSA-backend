@@ -11,6 +11,8 @@ import {IssuedDocsService} from './services/issued-docs.service';
 import {VerificationService} from './services/verification.service';
 import {SharedModule} from '../shared/shared.module';
 import {ActionLogsController} from './controllers/action-logs.controller';
+import {CivilActController} from './controllers/civil-act.controller';
+import {CivilActService} from './services/civil-act.service';
 
 @Module({
     imports: [
@@ -29,12 +31,14 @@ import {ActionLogsController} from './controllers/action-logs.controller';
     providers: [
         IssuedDocsService,
         VerificationService,
+        CivilActService,
     ],
     controllers: [
         IssuedDocsController,
         VerificationController,
         UserController,
         ActionLogsController,
+        CivilActController,
     ],
 })
 export class PublicModule {}

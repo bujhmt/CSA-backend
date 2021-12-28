@@ -1,10 +1,10 @@
-import {IsBoolean, IsOptional, IsUUID} from 'class-validator';
+import {IsBoolean, IsOptional, IsString, IsUUID} from 'class-validator';
 
 export class UpdateCivilActDTO {
-    @IsUUID()
+    @IsString()
         userId: string;
 
-    @IsUUID()
+    @IsString()
         civilActId: string;
 
     @IsOptional()
