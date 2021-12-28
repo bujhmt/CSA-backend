@@ -1,5 +1,5 @@
 import {
-    Controller, Post, UseGuards, Body, UseFilters, Request,
+    Controller, Post, UseGuards, Body, UseFilters, Request, Get,
 } from '@nestjs/common';
 import {RequestValidationFilter} from 'src/filters/request-validation.filter';
 import {AuthorizedRequest} from 'src/interfaces/authorized-request.interface';
@@ -10,6 +10,7 @@ import {CreateUserToken} from './interfaces/create-user-token.interface';
 import {AuthService} from './services/auth.service';
 import {JwtAuthGuard} from './guards/jwt-auth.guard';
 import {ActionLogsService} from '../shared/services/action-logs.service';
+import {User} from '.prisma/client';
 
 @Controller('auth')
 export class AuthController {
@@ -17,6 +18,12 @@ export class AuthController {
         private readonly authService: AuthService,
         private readonly actionLogsService: ActionLogsService,
     ) {
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get('me')
+    getCurrentUser(@Request() {user}: AuthorizedRequest): Pick<User, 'id' | 'login' | 'role' | 'name'> {
+        return user;
     }
 
     @UseGuards(LocalAuthGuard)
