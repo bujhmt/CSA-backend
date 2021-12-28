@@ -1,6 +1,6 @@
 import {
     Body,
-    Controller, Get, Logger, UseGuards, Request, Post,
+    Controller, Get, Logger, UseGuards, Request, Post, Query,
 } from '@nestjs/common';
 import {Answer} from 'src/interfaces/answer.interface';
 import {AuthorizedRequest} from 'src/interfaces/authorized-request.interface';
@@ -11,6 +11,7 @@ import {CivilActService} from '../services/civil-act.service';
 import {UpdateCivilActDTO} from '../dto/civil-act/update-civil-act.dto';
 import {GetUserCivilActDTO} from '../dto/civil-act/get-user-civil-act.dto';
 import {GetCivilActDTO} from '../dto/civil-act/get-civil-act.dto';
+import {CreateCivilActDTO} from '../dto/civil-act/create-civil-act.dto';
 
 @Controller('/civil-act')
 @UseGuards(JwtAuthGuard)
@@ -25,7 +26,7 @@ export class CivilActController {
     @Get('/user')
     async getUserCivilActs(
         @Request() {user}: AuthorizedRequest,
-        @Body() {userId}: GetUserCivilActDTO,
+        @Query() {userId}: GetUserCivilActDTO,
     ): Promise<Answer<Partial<CivilStatusAct[]>>> {
         try {
             const [data, total] = await this.civilActService.getUserCivilActs(user, userId);
@@ -46,7 +47,7 @@ export class CivilActController {
     @Get('/act')
     async getCivilAct(
         @Request() {user}: AuthorizedRequest,
-        @Body() {actId}: GetCivilActDTO,
+        @Query() {actId}: GetCivilActDTO,
     ): Promise<Answer<Partial<CivilStatusAct>>> {
         try {
             const data = await this.civilActService.getCivilAct(user, actId);
@@ -58,6 +59,19 @@ export class CivilActController {
             });
 
             return {success: true, data};
+        } catch (err) {
+            this.logger.error(err.message);
+            return {success: false};
+        }
+    }
+
+    @Post('/create')
+    async createUserCivilAct(
+        @Request() {user}: AuthorizedRequest,
+        @Body() createActDTO: CreateCivilActDTO,
+    ): Promise<Answer<CivilStatusAct>> {
+        try {
+            return {success: true, data: await this.civilActService.createUserCivilAct(user, createActDTO)};
         } catch (err) {
             this.logger.error(err.message);
             return {success: false};

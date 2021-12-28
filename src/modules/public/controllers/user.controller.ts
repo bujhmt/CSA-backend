@@ -10,6 +10,7 @@ import {
     UploadedFiles,
     UnauthorizedException,
     UseFilters,
+    Query,
 } from '@nestjs/common';
 import {JwtAuthGuard} from 'src/modules/auth/guards/jwt-auth.guard';
 import {UsersService} from 'src/modules/shared/services/users.service';
@@ -21,6 +22,7 @@ import {User} from '.prisma/client';
 import {ActionLogsService} from '../../shared/services/action-logs.service';
 import {ChangeStatusDto} from '../dto/users/change-status.dto';
 import {RequestValidationFilter} from '../../../filters/request-validation.filter';
+import { GetUsersDTO } from '../dto/users/get-users.dto';
 
 @Controller('/user')
 @UseGuards(JwtAuthGuard)
@@ -190,6 +192,21 @@ export class UserController {
 
             return {success: true, data};
         } catch {
+            return {success: false};
+        }
+    }
+
+    @Get('/users')
+    async getAllUsers(@Request() {user}: AuthorizedRequest, @Query() getUsersDTO: GetUsersDTO) {
+        const isRegistrator = await this.userService.getUserById(user.id);
+        if (isRegistrator.role !== Role.REGISTER || !isRegistrator.isActive) {
+            throw new UnauthorizedException();
+        }
+        try {
+            const [data, total] = await this.userService.getAllUsers(getUsersDTO);
+            return {success: true, data, total};
+        } catch (err) {
+            this.logger.error(err);
             return {success: false};
         }
     }

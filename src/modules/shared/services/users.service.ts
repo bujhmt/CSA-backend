@@ -1,6 +1,9 @@
 import {Injectable} from '@nestjs/common';
-import {PassportData, Role, User} from '@prisma/client';
+import {
+    PassportData, Prisma, Role, User,
+} from '@prisma/client';
 import {AddInfoDTO} from 'src/modules/public/dto/add-info.dto';
+import {GetUsersDTO} from 'src/modules/public/dto/users/get-users.dto';
 import {PrismaService} from '../../database/services/prisma.service';
 
 @Injectable()
@@ -50,6 +53,34 @@ export class UsersService {
                 isActive: true,
             },
         });
+    }
+
+    getAllUsers({take, name, skip}: GetUsersDTO): Promise<[Partial<User>[], number]> {
+        const where: Prisma.UserWhereInput = {
+            ...(name ? {
+                OR: [
+                    {name: {contains: name, mode: 'insensitive'}},
+                    {login: {contains: name, mode: 'insensitive'}},
+                ],
+            } : {}),
+            isActive: true,
+            role: Role.USER,
+        };
+
+        return Promise.all([
+            this.prismaService.user.findMany({
+                where,
+                select: {
+                    name: true,
+                    login: true,
+                    id: true,
+                },
+                skip,
+                take,
+                orderBy: {name: 'asc'},
+            }),
+            this.prismaService.user.count({where}),
+        ]);
     }
 
     async addFiles(
