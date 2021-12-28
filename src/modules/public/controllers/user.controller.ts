@@ -51,16 +51,16 @@ export class UserController {
         }
     }
 
-    @Get('/:login')
-    @UseFilters(RequestValidationFilter)
-    @UseInterceptors(
-        new ClearAnswerInterceptor(['passwordHash', 'id']),
-    )
-    public async getByLogin(@Param('login') login: string): Promise<Answer<Partial<User>>> {
+    @Get('/users')
+    async getAllUsers(@Request() {user}: AuthorizedRequest, @Query() getUsersDTO: GetUsersDto) {
+        const isRegistrator = await this.userService.getUserById(user.id);
+        if (isRegistrator.role !== Role.REGISTER || !isRegistrator.isActive) {
+            throw new UnauthorizedException();
+        }
+        console.log(getUsersDTO);
         try {
-            const data = await this.userService.getUserByLogin(login);
-
-            return {success: true, data};
+            const [data, total] = await this.userService.getAllUsers(getUsersDTO);
+            return {success: true, data, total};
         } catch (err) {
             this.logger.error(err);
             return {success: false};
@@ -228,15 +228,16 @@ export class UserController {
         }
     }
 
-    @Get('/users')
-    async getAllUsers(@Request() {user}: AuthorizedRequest, @Query() getUsersDTO: GetUsersDto) {
-        const isRegistrator = await this.userService.getUserById(user.id);
-        if (isRegistrator.role !== Role.REGISTER || !isRegistrator.isActive) {
-            throw new UnauthorizedException();
-        }
+    @Get('/:login')
+    @UseFilters(RequestValidationFilter)
+    @UseInterceptors(
+        new ClearAnswerInterceptor(['passwordHash', 'id']),
+    )
+    public async getByLogin(@Param('login') login: string): Promise<Answer<Partial<User>>> {
         try {
-            const [data, total] = await this.userService.getAllUsers(getUsersDTO);
-            return {success: true, data, total};
+            const data = await this.userService.getUserByLogin(login);
+
+            return {success: true, data};
         } catch (err) {
             this.logger.error(err);
             return {success: false};

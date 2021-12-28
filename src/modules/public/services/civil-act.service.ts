@@ -1,7 +1,7 @@
 import {Injectable, UnauthorizedException} from '@nestjs/common';
 import {Role} from '@prisma/client';
 import {PrismaService} from '../../database/services/prisma.service';
-import {CivilStatusAct, Prisma} from '.prisma/client';
+import {ActType, CivilStatusAct, Prisma} from '.prisma/client';
 import {User} from '../../database/interfaces/user.interface';
 import {CreateCivilActDTO} from '../dto/civil-act/create-civil-act.dto';
 
@@ -53,6 +53,36 @@ export class CivilActService {
         return this.prismaService.civilStatusAct.findUnique({where: {id: actId}});
     }
 
+    async marriageCivilAct({actType, data}: CreateCivilActDTO): Promise<CivilStatusAct> {
+        // const [husbandPassData, wifePassData] = await Promise.all([
+        //     this.prismaService.passportData.findUnique({
+        //         where: {document: data.husbandDocument},
+        //         include: {owner: true},
+        //     }),
+        //     this.prismaService.passportData.findUnique({
+        //         where: {document: data.wifeDocument},
+        //         include: {owner: true},
+        //     })]);
+        await this.prismaService.civilStatusAct.create({
+            data: {
+                data,
+                isActive: true,
+                actType: {connect: {typeName: actType}},
+                passportData: {connect: {document: data.husbandDocument}},
+            },
+            include: {actType: true},
+        });
+        return this.prismaService.civilStatusAct.create({
+            data: {
+                data,
+                isActive: true,
+                actType: {connect: {typeName: actType}},
+                passportData: {connect: {document: data.wifeDocument}},
+            },
+            include: {actType: true},
+        });
+    }
+
     async createUserCivilAct(
         registrator: Pick<User, 'id'>,
         {actType, userId, data}: CreateCivilActDTO,
@@ -72,7 +102,7 @@ export class CivilActService {
         }
         const user = await this.prismaService.user.findUnique({
             where: {id: userId},
-            select: {passportData: true},
+            select: {passportData: true, name: true},
         });
         switch (actType) {
         case 'nameChange':
@@ -80,19 +110,31 @@ export class CivilActService {
                 where: {id: userId},
                 data: {name: data.newName},
             });
-            break;
+            return this.prismaService.civilStatusAct.create({
+                data: {
+                    data: {
+                        newName: data.newName,
+                        oldName: user.name,
+                    },
+                    isActive: true,
+                    actType: {connect: {typeName: actType}},
+                    passportData: {connect: {id: user.passportData.id}},
+                },
+                include: {actType: true},
+            });
+        case 'marriage':
+            return this.marriageCivilAct({actType, userId, data});
         default:
-            break;
+            return this.prismaService.civilStatusAct.create({
+                data: {
+                    data,
+                    isActive: true,
+                    actType: {connect: {typeName: actType}},
+                    passportData: {connect: {id: user.passportData.id}},
+                },
+                include: {actType: true},
+            });
         }
-        return this.prismaService.civilStatusAct.create({
-            data: {
-                data,
-                isActive: true,
-                actType: {connect: {typeName: actType}},
-                passportData: {connect: {id: user.passportData.id}},
-            },
-            include: {actType: true},
-        });
     }
 
     async updateUserCivilAct(

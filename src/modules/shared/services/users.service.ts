@@ -110,7 +110,6 @@ export class UsersService {
             isActive: true,
             role: Role.USER,
         };
-
         return Promise.all([
             this.prismaService.user.findMany({
                 where,
